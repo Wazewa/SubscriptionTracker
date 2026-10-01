@@ -1,4 +1,11 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: subscriptions-frontend
+    ports:
+      - "3000:80"
+
   postgres:
     image: postgres:18
     container_name: subscriptions-postgres

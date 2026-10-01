@@ -66,4 +66,11 @@ Backend:
 - 4 пробела, отступы по IDEA default
 - Форматирование перед коммитом
 
-Frontend: TBD (фронтендер дополнит)
+Frontend:
+- React + TypeScript, Vite, Tailwind CSS.
+- Node.js 22.12+ (ветка 22), npm; `package-lock.json` коммитим.
+- Установка зависимостей: `cd frontend` и `npm ci`.
+- Разработка: `npm run dev`; проверка типов: `npm run typecheck`.
+- Перед MR: `npm run build` и проверка страницы в браузере.
+- Отступы 2 пробела; компоненты в PascalCase, переменные в camelCase.
+- `node_modules/`, `dist/` и секреты в Git не добавляем.

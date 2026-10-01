@@ -19,6 +19,7 @@ cd tp_ivt_team9_2026
 
 - Docker Desktop (или Docker Engine + Docker Compose)
 - Git
+- Node.js 22.12+ (ветка 22) и npm — для разработки frontend без Docker
 
 ## Запуск
 
@@ -28,12 +29,48 @@ cd tp_ivt_team9_2026
 2. Сгенерируй JWT-секрет
 3. Запусти одной командой `docker compose up -d --build`
 
+Frontend доступен на http://localhost:3000, backend — на http://localhost:8080.
+Frontend пока отображает заглушку `Hello, Subscription Tracker!` и не требует API.
+
+### Только frontend через Docker
+
+Из корня репозитория:
+
+```sh
+docker compose up -d --build frontend
+```
+
+Открой http://localhost:3000. Для остановки: `docker compose stop frontend`.
+Переменные из `.env` нужны сервисам backend и PostgreSQL; для frontend-заглушки они не нужны.
+Compose может предупредить об отсутствующих переменных остальных сервисов.
+
+### Разработка frontend без Docker
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Открой http://localhost:3000. Изменения исходников обновляются автоматически.
+`npm run typecheck` проверяет TypeScript; `npm run build` проверяет типы и собирает
+production-версию в `frontend/dist`. `npm run preview` позволяет проверить сборку
+на порту 3000 после остановки dev-сервера.
+
+### Docker frontend
+
+`frontend/Dockerfile` сначала собирает приложение в Node.js, затем обслуживает
+статические файлы через nginx. Конфигурация поддерживает открытие вложенных
+SPA-маршрутов и проверку здоровья `/health`. Контейнер слушает порт 80,
+Compose публикует его на порту 3000 компьютера.
+
 ## Статус
 
-Проект в стадии активной разработки. Скелет бэкенда готов, остальные компоненты в работе.
+Проект в стадии активной разработки. Скелет бэкенда и базовый frontend готовы,
+продуктовые экраны и интеграция с API в работе.
 
 ## Что появится в ближайшее время
 - Эндпоинты авторизации и CRUD подписок
-- Расширение `docker-compose.yml`: frontend, ml, bot
+- Расширение `docker-compose.yml`: ml, bot
 
 Следите за обновлениями — README будет дополняться по мере готовности компонентов.

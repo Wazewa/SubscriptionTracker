@@ -1,4 +1,5 @@
 import Logo from "../components/Logo";
+import { Link } from 'react-router-dom';
 
 import mailIcon from "../assets/icons/mail.svg";
 import lock1Icon from "../assets/icons/lock1.svg";
@@ -105,13 +106,14 @@ export default function Register() {
 
       <p className="mt-3 text-center text-[15px] font-bold text-[#123d12]">
         Уже есть аккаунт?{" "}
-        <a
-          href="/login"
+        <Link
+          to="/login"
           className="font-bold text-[#285d25] hover:underline"
         >
           Войти
-        </a>
+        </Link>
       </p>
+      <p className="mt-4 text-center text-sm text-[#687468]">Регистрация будет доступна после подключения API авторизации.</p>
     </main>
   );
 }

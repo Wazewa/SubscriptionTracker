@@ -17,6 +17,9 @@
 .group:hover img {
   filter: brightness(0) saturate(100%) invert(48%) sepia(20%) saturate(1200%) hue-rotate(100deg);
 }
+.menu-link[aria-current="page"] img {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(20%) saturate(1200%) hue-rotate(100deg);
+}
 
 @layer utilities {
   .font-unbounded {

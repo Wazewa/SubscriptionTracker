@@ -1,8 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Unbounded:wght@700&display=swap");
+
 @import "tailwindcss";
 
 @layer base {
   body {
     margin: 0;
-    font-family: system-ui, sans-serif;
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+  }
+
+  button,
+  input {
+    font-family: "Inter", sans-serif;
+  }
+}
+.group:hover img {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(20%) saturate(1200%) hue-rotate(100deg);
+}
+.menu-link[aria-current="page"] img {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(20%) saturate(1200%) hue-rotate(100deg);
+}
+
+@layer utilities {
+  .font-unbounded {
+    font-family: "Unbounded", sans-serif;
   }
 }

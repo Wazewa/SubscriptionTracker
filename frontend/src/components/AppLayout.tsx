@@ -18,7 +18,9 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const section = sections.find((item) => item.to === location.pathname) || sections[0];
+  const section = location.pathname === '/subscriptions/new'
+    ? { title: 'Новая подписка', subtitle: 'Добавление подписки' }
+    : sections.find((item) => item.to === location.pathname) || sections[0];
   useEffect(() => { document.title = `${section.title} — Трекер подписок`; }, [section.title]);
   return (
     <div className="min-h-screen bg-[#f7f8f4] text-[#183d20] md:flex">
@@ -28,7 +30,7 @@ export default function AppLayout() {
         </Link>
         <nav aria-label="Основное меню" className="flex flex-wrap gap-1 md:flex-col">
           {sections.map((item) => (
-            <NavLink key={item.to} to={item.to} end className={({ isActive }) => `menu-link flex items-center gap-2 rounded-xl px-3 py-3 text-sm transition-colors hover:bg-[#f5f6f2] focus-visible:outline-2 focus-visible:outline-green-700 ${isActive ? 'bg-[#f5f6f2] text-[#2e9b62]' : 'text-[#052400]'}`}>
+            <NavLink key={item.to} to={item.to} end={item.to !== '/subscriptions'} className={({ isActive }) => `menu-link flex items-center gap-2 rounded-xl px-3 py-3 text-sm transition-colors hover:bg-[#f5f6f2] focus-visible:outline-2 focus-visible:outline-green-700 ${isActive ? 'bg-[#f5f6f2] text-[#2e9b62]' : 'text-[#052400]'}`}>
               <img src={item.icon} alt="" className="h-5 w-5" />{item.title}
             </NavLink>
           ))}

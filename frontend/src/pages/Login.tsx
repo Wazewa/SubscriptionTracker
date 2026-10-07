@@ -1,11 +1,31 @@
 import Logo from "../components/Logo";
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useRef, useState, type FormEvent } from 'react';
+import { useAuth } from '../auth/AuthProvider';
+import { demoReturnTarget } from '../auth/demoReturnTarget';
 import DemoEntry from '../components/DemoEntry';
 
 import mailIcon from "../assets/icons/mail.svg";
 import lock1Icon from "../assets/icons/lock1.svg";
 
 export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState('');
+  const inFlight = useRef(false);
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (inFlight.current || !event.currentTarget.reportValidity()) return;
+    const values = new FormData(event.currentTarget);
+    inFlight.current = true; setPending(true); setMessage('');
+    try {
+      await login(String(values.get('email')).trim(), String(values.get('password')));
+      navigate(demoReturnTarget(location.state?.from), { replace: true });
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Не удалось войти.'); }
+    finally { inFlight.current = false; setPending(false); }
+  }
   return (
     <main className="flex min-h-screen flex-col items-center bg-[#f7f8f4] px-4 py-6">
       <Logo subtitle="Удобный способ управлять вашими подписками" />
@@ -17,7 +37,8 @@ export default function Login() {
 
         <form
           className="space-y-[15px]"
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={handleSubmit}
+          aria-busy={pending}
         >
           <div>
             <label
@@ -32,6 +53,10 @@ export default function Login() {
 
               <input
                 id="email"
+                name="email"
+                required
+                autoComplete="username"
+                disabled={pending}
                 type="email"
                 placeholder="Введите ваш email"
                 className="w-full bg-transparent text-sm font-bold outline-none placeholder:text-[#858b85]"
@@ -52,6 +77,11 @@ export default function Login() {
 
               <input
                 id="password"
+                name="password"
+                required
+                minLength={8}
+                autoComplete="current-password"
+                disabled={pending}
                 type="password"
                 placeholder="Введите пароль"
                 className="w-full bg-transparent text-sm font-bold outline-none placeholder:text-[#858b85]"
@@ -61,10 +91,12 @@ export default function Login() {
 
           <button
             type="submit"
-            className="font-unbounded mt-2 w-full rounded-full bg-[#3ba273] py-[9px] text-[20px] font-bold text-white transition-colors hover:bg-[#318b62] active:bg-[#287650]"
+            disabled={pending}
+            className="font-unbounded mt-2 w-full rounded-full bg-[#3ba273] py-[9px] text-[20px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Войти
+            {pending ? 'Входим…' : 'Войти'}
           </button>
+          {message && <p role="alert" className="text-sm text-red-700">{message}</p>}
         </form>
       </section>
 
@@ -77,7 +109,6 @@ export default function Login() {
           Зарегистрироваться
         </Link>
       </p>
-      <p className="mt-4 text-center text-sm text-[#687468]">Вход в аккаунт будет доступен после подключения API авторизации.</p>
       <DemoEntry />
     </main>
   );

@@ -42,7 +42,7 @@
 3. Локально прогони `mvn verify` (для backend)
 4. Открой MR в `master`
 5. Дождись 1 approve
-6. Смержи (squash или merge — договоримся)
+6. Смержи через **squash** — один коммит на MR
 
 ## Перед MR
 
@@ -62,7 +62,7 @@
 ## Стиль кода
 
 Backend:
-- Java 21, Spring Boot 3
+- Java 25, Spring Boot 4
 - 4 пробела, отступы по IDEA default
 - Форматирование перед коммитом
 

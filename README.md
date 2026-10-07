@@ -25,12 +25,43 @@ cd tp_ivt_team9_2026
 
 ### Первый запуск
 
-1. Скопируй `.env.example` в `.env`
-2. Сгенерируй JWT-секрет
-3. Запусти одной командой `docker compose up -d --build`
+1. Скопируй `.env.example` в `.env`:
 
-Frontend доступен на http://localhost:3000, backend — на http://localhost:8080.
+```sh
+cp .env.example .env
+```
+
+2. Сгенерируй JWT-секрет (минимум 64 символа) и вставь в `.env` в `JWT_SECRET`
+
+3. Запусти одной командой
+
+```sh
+ `docker compose up --build`
+ ```
+
+Frontend доступен на http://localhost:3000, backend — на http://localhost:8080, health - на http://localhost:8080/health.
+Swagger - http://localhost:8080/swagger-ui.html
 Frontend пока отображает заглушку `Hello, Subscription Tracker!` и не требует API.
+
+### Остановка
+
+```sh
+docker compose down
+```
+
+### Только backend через Docker
+
+Подними только PostgreSQL:
+
+```sh
+docker compose up postgres -d
+```
+
+Потом из backend:
+
+```sh
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
 
 ### Только frontend через Docker
 
@@ -64,10 +95,52 @@ production-версию в `frontend/dist`. `npm run preview` позволяет
 SPA-маршрутов и проверку здоровья `/health`. Контейнер слушает порт 80,
 Compose публикует его на порту 3000 компьютера.
 
+## API
+
+Swagger UI: http://localhost:8080/swagger-ui.html
+
+| Метод | Путь | Описание |
+|---|---|---|
+| POST | `/api/auth/register` | Регистрация |
+| POST | `/api/auth/login` | Логин (JWT) |
+| GET | `/api/auth/me` | Профиль по токену |
+| GET | `/health` | Healthcheck |
+
+
+## Структура backend
+
+Пакеты — по фичам:
+- `auth/` — регистрация, логин, JWT, DTO, exceptions
+- `user/` — entity `User`, репозиторий, exceptions
+- `config/` — `SecurityConfig`, `OpenApiConfig`
+- `security/` — `JwtAuthenticationFilter`
+- `exception/` — `GlobalExceptionHandler`
+- `dto/response/` — общие DTO (`ApiError`)
+
+## Порты
+
+| Сервис | Порт хоста |
+|---|---|
+| Frontend | 3000 |
+| Backend | 8080 |
+| PostgreSQL | 5433 |
+
+## Правила работы
+
+См. [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+Кратко: `master` защищён, изменения через MR + 1 approve,
+коммиты — Conventional Commits.
+
 ## Статус
 
-Проект в стадии активной разработки. Скелет бэкенда и базовый frontend готовы,
-продуктовые экраны и интеграция с API в работе.
+**Готово:**
+- Структура монорепозитория
+- Spring Boot backend — регистрация, логин, JWT, `/me`
+- React frontend — меню, роутинг, экран логина
+- Docker Compose — backend + frontend + PostgreSQL
+- Правила работы в [CONTRIBUTING.md](./CONTRIBUTING.md)
+
 
 ## Базы данных
 В проекте используется реляционная СУБД PostgreSQL. Миграции схемы данных управляются автоматически при старте бэкенда с помощью Flyway.
@@ -82,7 +155,7 @@ Compose публикует его на порту 3000 компьютера.
 Файлы миграций расположены по пути: `backend/src/main/resources/db/migration/`.
 
 ## Что появится в ближайшее время
-- Эндпоинты авторизации и CRUD подписок
-- Расширение `docker-compose.yml`: ml, bot
-
-Следите за обновлениями — README будет дополняться по мере готовности компонентов.
+- CRUD подписок
+- Дашборд с аналитикой
+- ML-сервис и бот
+- Полноценные уведомления (email/push)

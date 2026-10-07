@@ -5,6 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
+import ru.ivt.subscriptiontracker.app.dto.response.ApiError;
+import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
+import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
 
 import java.time.Instant;
 
@@ -28,16 +33,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRegistrationException.class)
     public ResponseEntity<ApiError> handleInvalidRegistration(
             InvalidRegistrationException exception
-    ) {
-        return buildError(
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage()
-        );
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgumentException(
-            IllegalArgumentException exception
     ) {
         return buildError(
                 HttpStatus.BAD_REQUEST,

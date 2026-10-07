@@ -7,10 +7,10 @@ import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
 import ru.ivt.subscriptiontracker.app.auth.dto.LoginRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.RegisterRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.UserResponse;
-import ru.ivt.subscriptiontracker.app.exception.InvalidCredentialsException;
-import ru.ivt.subscriptiontracker.app.exception.InvalidRegistrationException;
-import ru.ivt.subscriptiontracker.app.exception.UserAlreadyExistsException;
-import ru.ivt.subscriptiontracker.app.exception.UserNotFoundException;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
+import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
+import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 
@@ -62,8 +62,6 @@ public class AuthService {
         );
         user.setBaseCurrency("RUB");
         user.setStatus("PENDING");
-        user.setRegisteredAt(Instant.now());
-        user.setUpdatedAt(Instant.now());
 
         User savedUser = userRepository.save(user);
 

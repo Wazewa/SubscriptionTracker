@@ -23,7 +23,7 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(
                 secret.getBytes(StandardCharsets.UTF_8)
         );
-        this.expirationMs = expirationMs;
+        this.expirationMs = expirationMs * 1000;
     }
 
     public String generateToken(Integer userId, String email) {

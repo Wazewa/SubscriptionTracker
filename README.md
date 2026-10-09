@@ -37,7 +37,7 @@ cp .env.example .env
 
 ```sh
  `docker compose up --build`
- ```
+```
 
 Frontend доступен на http://localhost:3000, backend — на http://localhost:8080, health - на http://localhost:8080/health.
 Swagger - http://localhost:8080/swagger-ui.html
@@ -99,17 +99,17 @@ Compose публикует его на порту 3000 компьютера.
 
 Swagger UI: http://localhost:8080/swagger-ui.html
 
-| Метод | Путь | Описание |
-|---|---|---|
-| POST | `/api/auth/register` | Регистрация |
-| POST | `/api/auth/login` | Логин (JWT) |
-| GET | `/api/auth/me` | Профиль по токену |
-| GET | `/health` | Healthcheck |
-
+| Метод | Путь                 | Описание          |
+| ----- | -------------------- | ----------------- |
+| POST  | `/api/auth/register` | Регистрация       |
+| POST  | `/api/auth/login`    | Логин (JWT)       |
+| GET   | `/api/auth/me`       | Профиль по токену |
+| GET   | `/health`            | Healthcheck       |
 
 ## Структура backend
 
 Пакеты — по фичам:
+
 - `auth/` — регистрация, логин, JWT, DTO, exceptions
 - `user/` — entity `User`, репозиторий, exceptions
 - `config/` — `SecurityConfig`, `OpenApiConfig`
@@ -119,11 +119,41 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 
 ## Порты
 
-| Сервис | Порт хоста |
-|---|---|
-| Frontend | 3000 |
-| Backend | 8080 |
-| PostgreSQL | 5433 |
+| Сервис     | Порт хоста |
+| ---------- | ---------- |
+| Frontend   | 3000       |
+| Backend    | 8080       |
+| PostgreSQL | 5433       |
+
+## Тестирование
+
+### Интеграционные тесты backend
+
+Интеграционные тесты находятся в каталоге `backend/src/test/java/ru/ivt/subscriptiontracker/app/` и проверяют сценарии работы API с использованием **REST-Assured**.
+
+#### Требования
+
+- Установленная **Java 25** (проверить: `java -version`).
+- Запущенный backend и база данных (например, через `docker compose up -d`).
+
+#### Запуск
+
+Из директории `backend`:
+
+```sh
+cd backend
+mvn test
+```
+
+Запуск конкретных тестов:
+
+```sh
+# Только интеграционные тесты авторизации
+mvn test -Dtest=AuthIntegrationTest
+
+# Только healthcheck
+mvn test -Dtest=HealthApiTest
+```
 
 ## Правила работы
 
@@ -135,17 +165,19 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 ## Статус
 
 **Готово:**
+
 - Структура монорепозитория
 - Spring Boot backend — регистрация, логин, JWT, `/me`
 - React frontend — меню, роутинг, экран логина
 - Docker Compose — backend + frontend + PostgreSQL
 - Правила работы в [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-
 ## Базы данных
+
 В проекте используется реляционная СУБД PostgreSQL. Миграции схемы данных управляются автоматически при старте бэкенда с помощью Flyway.
 
 ### Сущности и особенности архитектуры
+
 `users` поле `email` имеет ограничение `UNIQUE` и используется как уникальный логин для авторизации.
 `categories` изолированный глобальный справочник, общий для всех пользователей системы.
 `subscriptions` бизнес-логика хранения подписок пользователей. Поле стоимости содержит ограничение `CHECK (amount > 0)`.
@@ -155,6 +187,7 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 Файлы миграций расположены по пути: `backend/src/main/resources/db/migration/`.
 
 ## Что появится в ближайшее время
+
 - CRUD подписок
 - Дашборд с аналитикой
 - ML-сервис и бот

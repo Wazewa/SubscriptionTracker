@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
 import ru.ivt.subscriptiontracker.app.dto.response.ApiError;
 import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
@@ -33,6 +34,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRegistrationException.class)
     public ResponseEntity<ApiError> handleInvalidRegistration(
             InvalidRegistrationException exception
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(InvalidPasswordChangeException.class)
+    public ResponseEntity<ApiError> handleInvalidPasswordChange(
+            InvalidPasswordChangeException exception
     ) {
         return buildError(
                 HttpStatus.BAD_REQUEST,

@@ -1,17 +1,14 @@
 package ru.ivt.subscriptiontracker.app.login;
 
-import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-class HealthApiTest {
+class HealthApiTest extends BaseApiTest {
 
     @Test
     void shouldReturnOkStatus() {
-        RestAssured.baseURI = "http://localhost:8080";
-
         given()
                 .when()
                 .get("/health")

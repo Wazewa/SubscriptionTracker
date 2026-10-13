@@ -4,10 +4,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
+import ru.ivt.subscriptiontracker.app.auth.dto.ChangePasswordRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.LoginRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.RegisterRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.UserResponse;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
+import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
@@ -112,5 +114,44 @@ public class AuthService {
                 user.getBaseCurrency(),
                 user.getStatus()
         );
+    }
+
+    @Transactional
+    public void changePassword(String email, ChangePasswordRequest request) {
+
+        if (!request.newPassword().equals(request.confirmNewPassword())) {
+            throw new InvalidPasswordChangeException(
+                    "Passwords do not match"
+            );
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User not found"
+                ));
+
+        if (!passwordEncoder.matches(
+                request.currentPassword(),
+                user.getPasswordHash()
+        )) {
+            throw new InvalidPasswordChangeException(
+                    "Current password is incorrect"
+            );
+        }
+
+        if (passwordEncoder.matches(
+                request.newPassword(),
+                user.getPasswordHash()
+        )) {
+            throw new InvalidPasswordChangeException(
+                    "New password must be different from the current one"
+            );
+        }
+
+        user.setPasswordHash(
+                passwordEncoder.encode(request.newPassword())
+        );
+
+        userRepository.save(user);
     }
 }

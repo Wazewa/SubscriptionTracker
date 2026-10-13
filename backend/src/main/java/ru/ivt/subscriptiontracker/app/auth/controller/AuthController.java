@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
+import ru.ivt.subscriptiontracker.app.auth.dto.ChangePasswordRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.LoginRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.RegisterRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.UserResponse;
@@ -47,4 +48,15 @@ public class AuthController {
                 authService.getCurrentUser(authentication.getName())
         );
     }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PatchMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -1,4 +1,4 @@
-package ru.ivt.subscriptiontracker.app.auth.controller;
+package ru.ivt.subscriptiontracker.app.register;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,26 +26,31 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "jwt.secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab",
-                "spring.datasource.url=jdbc:postgresql://localhost:5432/SubscriptionTracker",
-                "spring.datasource.username=postgres",
-                "spring.datasource.password=1234",
-                "spring.flyway.user=postgres",
-                "spring.flyway.password=1234"
-        }
-)
-@ActiveProfiles("local")
-class AuthControllerIntegrationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+@ActiveProfiles("test")
+class AuthRegisterIntegrationTest  {
+
+    @Container
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18")
+            .withDatabaseName("subscriptions")
+            .withUsername("postgres")
+            .withPassword("postgres");
+
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("jwt.secret",
+                () -> "test-secret-at-least-256-bits-long-for-hs384-signing-key-abc");
+    }
 
     @Autowired
     private Environment env;
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
-
 
     private HttpResponse<String> register(Map<String, Object> body) throws Exception {
         String baseUrl = "http://localhost:" + env.getProperty("local.server.port");
@@ -70,7 +80,7 @@ class AuthControllerIntegrationTest {
         return "user_" + UUID.randomUUID() + "@example.com";
     }
     @Test
-    @DisplayName("РЈСЃРїРµС€РЅР°СЏ СЂРµРіРёСЃС‚СЂР°С†РёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ")
+    @DisplayName("Успешная регистрация пользователя")
     void register_Success() throws Exception {
         String email = uniqueEmail();
 
@@ -80,12 +90,12 @@ class AuthControllerIntegrationTest {
         JsonNode json = mapper.readTree(response.body());
         assertEquals(email, json.get("email").asText());
         assertNotNull(json.get("userId"));
-        assertFalse(json.has("password"), "РџР°СЂРѕР»СЊ РЅРµ РґРѕР»Р¶РµРЅ РІРѕР·РІСЂР°С‰Р°С‚СЊСЃСЏ РІ РѕС‚РІРµС‚Рµ");
-        assertFalse(json.has("passwordHash"), "РҐРµС€ РїР°СЂРѕР»СЏ РЅРµ РґРѕР»Р¶РµРЅ РІРѕР·РІСЂР°С‰Р°С‚СЊСЃСЏ РІ РѕС‚РІРµС‚Рµ");
+        assertFalse(json.has("password"), "Пароль не должен возвращаться в ответе");
+        assertFalse(json.has("passwordHash"), "Хеш пароля не должен возвращаться в ответе");
     }
 
     @Test
-    @DisplayName("РћС€РёР±РєР°: СЂРµРіРёСЃС‚СЂР°С†РёСЏ СЃ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј email")
+    @DisplayName("Ошибка: регистрация с уже существующим email")
     void register_DuplicateEmail() throws Exception {
         String email = uniqueEmail();
 
@@ -96,7 +106,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ С„РѕСЂРјР°С‚ email")
+    @DisplayName("Ошибка валидации: некорректный формат email")
     void register_InvalidEmail() throws Exception {
         HttpResponse<String> response = register(validBody("invalid-email-format"));
 
@@ -104,7 +114,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: СЃР»РёС€РєРѕРј РєРѕСЂРѕС‚РєРёР№ РїР°СЂРѕР»СЊ")
+    @DisplayName("Ошибка валидации: слишком короткий пароль")
     void register_ShortPassword() throws Exception {
         HttpResponse<String> response = register(body(uniqueEmail(), "123", "123", true));
 
@@ -112,7 +122,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: РЅРµС‚ СЃРѕРіР»Р°СЃРёСЏ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РґР°РЅРЅС‹С…")
+    @DisplayName("Ошибка валидации: нет согласия на обработку данных")
     void register_NoAgreement() throws Exception {
         HttpResponse<String> response =
                 register(body(uniqueEmail(), "SecurePass123", "SecurePass123", false));

@@ -50,7 +50,7 @@ public class AuthController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/change-password")
+    @PatchMapping("/change-password")
     public ResponseEntity<Void> changePassword(
             Authentication authentication,
             @Valid @RequestBody ChangePasswordRequest request

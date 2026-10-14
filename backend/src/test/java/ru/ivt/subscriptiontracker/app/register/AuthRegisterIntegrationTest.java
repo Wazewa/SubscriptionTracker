@@ -129,4 +129,16 @@ class AuthRegisterIntegrationTest  {
 
         assertEquals(400, response.statusCode());
     }
+
+    @Test
+    @DisplayName("Ошибка: регистрация с уже существующим email в другом регистре")
+    void register_DuplicateEmailDifferentCase() throws Exception {
+        String email = uniqueEmail();
+        String upperCaseEmail = email.toUpperCase();
+
+        assertEquals(201, register(validBody(email)).statusCode());
+        HttpResponse<String> second = register(validBody(upperCaseEmail));
+
+        assertEquals(409, second.statusCode());
+    }
 }

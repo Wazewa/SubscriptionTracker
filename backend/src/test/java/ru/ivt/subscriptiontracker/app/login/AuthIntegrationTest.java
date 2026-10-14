@@ -375,5 +375,26 @@ public class AuthIntegrationTest extends BaseApiTest {
                     .body("message", equalTo("Authentication is required"))
                     .body("timestamp", notNullValue());
         }
+        @Test
+        @DisplayName("ID 13: Успешная авторизация с email в другом регистре (регистронезависимость)")
+        void testSuccessfulLoginWithDifferentCaseEmail() {
+            // validEmail создается в beforeEach в нижнем регистре
+            String mixedCaseEmail = validEmail.toUpperCase();
+
+            Map<String, String> loginRequest = Map.of(
+                    "email", mixedCaseEmail,
+                    "password", validPassword
+            );
+
+            given()
+                    .contentType(ContentType.JSON)
+                    .body(loginRequest)
+                    .when()
+                    .post("/api/auth/login")
+                    .then()
+                    .statusCode(200)
+                    .body("token", notNullValue())
+                    .body("token", not(emptyOrNullString()));
+        }
     }
 }

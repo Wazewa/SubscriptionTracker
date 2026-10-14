@@ -16,6 +16,7 @@ import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 
+import java.util.Locale;
 import java.time.Instant;
 
 @Service
@@ -50,7 +51,11 @@ public class AuthService {
             );
         }
 
-        if (userRepository.existsByEmail(request.email())) {
+        String normalizedEmail = request.email()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new UserAlreadyExistsException(
                     "User with this email already exists"
             );
@@ -58,7 +63,7 @@ public class AuthService {
 
         User user = new User();
 
-        user.setEmail(request.email());
+        user.setEmail(normalizedEmail);
         user.setPasswordHash(
                 passwordEncoder.encode(request.password())
         );
@@ -78,7 +83,11 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.email())
+        String normalizedEmail = request.email()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new InvalidCredentialsException(
                         "Invalid email or password"
                 ));
@@ -103,7 +112,10 @@ public class AuthService {
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(String email) {
 
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = email.trim()
+                .toLowerCase(Locale.ROOT);
+
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new UserNotFoundException(
                         "User not found"
                 ));
@@ -125,7 +137,10 @@ public class AuthService {
             );
         }
 
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = email.trim()
+                .toLowerCase(Locale.ROOT);
+
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new UserNotFoundException(
                         "User not found"
                 ));

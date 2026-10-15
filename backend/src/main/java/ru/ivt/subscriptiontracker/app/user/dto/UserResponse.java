@@ -1,4 +1,4 @@
-package ru.ivt.subscriptiontracker.app.auth.dto;
+package ru.ivt.subscriptiontracker.app.user.dto;
 
 public record UserResponse(
         Integer userId,

@@ -10,7 +10,7 @@ import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
 import ru.ivt.subscriptiontracker.app.auth.dto.ChangePasswordRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.LoginRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.RegisterRequest;
-import ru.ivt.subscriptiontracker.app.auth.dto.UserResponse;
+import ru.ivt.subscriptiontracker.app.user.dto.UserResponse;
 import ru.ivt.subscriptiontracker.app.auth.service.AuthService;
 
 @RestController

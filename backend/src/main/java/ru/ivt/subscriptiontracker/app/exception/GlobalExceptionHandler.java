@@ -9,6 +9,7 @@ import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
 import ru.ivt.subscriptiontracker.app.dto.response.ApiError;
+import ru.ivt.subscriptiontracker.app.subscription.exception.SubscriptionNotFoundException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
 
@@ -59,6 +60,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT,
                 exception.getMessage()
         );
+    }
+
+    @ExceptionHandler(SubscriptionNotFoundException.class)
+    public ResponseEntity<ApiError> handleSubscriptionNotFoundException(
+            SubscriptionNotFoundException exception
+    ) {
+        String message = exception.getMessage() != null
+                ? exception.getMessage()
+                : "Subscription not found";
+
+        return buildError(HttpStatus.NOT_FOUND, message);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

@@ -7,7 +7,7 @@ import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
 import ru.ivt.subscriptiontracker.app.auth.dto.ChangePasswordRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.LoginRequest;
 import ru.ivt.subscriptiontracker.app.auth.dto.RegisterRequest;
-import ru.ivt.subscriptiontracker.app.auth.dto.UserResponse;
+import ru.ivt.subscriptiontracker.app.user.dto.UserResponse;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
@@ -17,7 +17,6 @@ import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 
 import java.util.Locale;
-import java.time.Instant;
 
 @Service
 public class AuthService {

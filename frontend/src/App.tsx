@@ -5,9 +5,10 @@ import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
-import SectionPlaceholder from './pages/SectionPlaceholder';
+import SubscriptionsPage from './pages/SubscriptionsPage';
 import Dashboard from './pages/Dashboard';
 import NewSubscription from './pages/NewSubscription';
+import EditSubscription from './pages/EditSubscription';
 
 function ProtectedRoute() {
   const { user, loading } = useAuth();
@@ -39,8 +40,9 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/subscriptions" element={<SectionPlaceholder title="Подписки" />} />
+              <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/subscriptions/new" element={<NewSubscription />} />
+              <Route path="/subscriptions/:id/edit" element={<EditSubscription />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>

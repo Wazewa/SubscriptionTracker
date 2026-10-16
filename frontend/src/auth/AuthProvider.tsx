@@ -1,14 +1,10 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createAuthApi } from './api';
+import { clearAuthSession, readSession, TOKEN_KEY, DEMO_KEY } from './session';
 
 type User = { email: string; isDemo?: boolean };
 type AuthState = { user: User | null; loading: boolean; error: string; login: (email: string, password: string) => Promise<void>; startDemo: () => void; logout: () => void };
 const AuthContext = createContext<AuthState | null>(null);
-const TOKEN_KEY = 'subscription-tracker.token';
-const DEMO_KEY = 'subscription-tracker.demo';
-function readSession(key: string) {
-  try { return sessionStorage.getItem(key); } catch { return null; }
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -53,11 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     catch { throw new Error('Разрешите хранение сессии в браузере, чтобы войти.'); }
     setUser(profile); setLoading(false);
   }
-  function logout() {
+  const logout = useCallback(() => {
     generation.current += 1;
-    try { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(DEMO_KEY); } catch { /* Logout also works without storage. */ }
+    clearAuthSession();
     setUser(null); setError(''); setLoading(false);
-  }
+  }, []);
   function startDemo() {
     if (!import.meta.env.DEV) return;
     generation.current += 1;

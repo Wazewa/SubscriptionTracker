@@ -41,7 +41,7 @@ cp .env.example .env
 
 Frontend доступен на http://localhost:3000, backend — на http://localhost:8080, health - на http://localhost:8080/health.
 Swagger - http://localhost:8080/swagger-ui.html
-Frontend пока отображает заглушку `Hello, Subscription Tracker!` и не требует API.
+Frontend содержит меню, авторизацию, Dashboard и страницу подписок. Для регистрации и входа требуется backend; подписки пока проверяются на явно обозначенных демо-данных в режиме разработки. Подготовка API списка и ограничения описаны в [frontend/SUBSCRIPTIONS.md](frontend/SUBSCRIPTIONS.md).
 
 ### Остановка
 
@@ -72,7 +72,7 @@ docker compose up -d --build frontend
 ```
 
 Открой http://localhost:3000. Для остановки: `docker compose stop frontend`.
-Переменные из `.env` нужны сервисам backend и PostgreSQL; для frontend-заглушки они не нужны.
+Переменные из `.env` нужны сервисам backend и PostgreSQL. Для сборки frontend секреты не требуются; API списка подписок пока выключен до согласования контракта.
 Compose может предупредить об отсутствующих переменных остальных сервисов.
 
 ### Разработка frontend без Docker

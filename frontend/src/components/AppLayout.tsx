@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import logo from '../assets/icons/logo.svg';
 import dashboardIcon from '../assets/icons/dashboard.svg';
 import subscriptionsIcon from '../assets/icons/subscriptions.svg';
 import settingsIcon from '../assets/icons/settings.svg';
-import exitIcon from '../assets/icons/exit.svg';
+import LogoutButton from './LogoutButton';
 import accountIcon from '../assets/icons/account.svg';
 import notificationIcon from '../assets/icons/notification1.svg';
 
@@ -15,12 +15,23 @@ const sections = [
   { to: '/settings', title: 'Настройки', subtitle: 'Управляйте своим аккаунтом', icon: settingsIcon },
 ];
 export default function AppLayout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-  const section = location.pathname === '/subscriptions/new'
-    ? { title: 'Новая подписка', subtitle: 'Добавление подписки' }
-    : sections.find((item) => item.to === location.pathname) || sections[0];
+  const isNewSubscription = location.pathname === '/subscriptions/new';
+  const isEditSubscription = /^\/subscriptions\/[^/]+\/edit$/.test(location.pathname);
+
+  const section = isNewSubscription
+    ? {
+        title: 'Новая подписка',
+        subtitle: 'Добавьте новую подписку, чтобы не забыть о следующем списании.',
+      }
+    : isEditSubscription
+      ? {
+          title: 'Редактирование подписки',
+          subtitle: 'Измените данные выбранной подписки.',
+        }
+      : sections.find((item) => item.to === location.pathname) || sections[0];
+
   useEffect(() => { document.title = `${section.title} — Трекер подписок`; }, [section.title]);
   return (
     <div className="min-h-screen bg-[#f7f8f4] text-[#183d20] md:flex">
@@ -37,7 +48,7 @@ export default function AppLayout() {
         </nav>
         <div className="mt-5 flex items-center justify-between gap-2 md:mt-auto md:flex-col md:items-stretch">
           <span className="truncate text-xs" title={user?.email}>{user?.email}</span>
-          <button type="button" onClick={() => { logout(); navigate('/login', { replace: true }); }} className="flex items-center justify-center gap-2 rounded-xl px-3 py-3 hover:bg-[#f5f6f2] focus-visible:outline-2 focus-visible:outline-green-700"><img src={exitIcon} alt="" className="h-5 w-5" />Выйти</button>
+          <LogoutButton />
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-5 py-6 sm:px-8">

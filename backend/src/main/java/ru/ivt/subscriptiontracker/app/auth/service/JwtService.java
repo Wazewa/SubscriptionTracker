@@ -26,7 +26,7 @@ public class JwtService {
         this.expirationMs = expirationMs * 1000;
     }
 
-    public String generateToken(Integer userId, String email) {
+    public String generateToken(Long userId, String email) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
@@ -43,9 +43,9 @@ public class JwtService {
         return extractClaims(token).getSubject();
     }
 
-    public Integer extractUserId(String token) {
+    public Long extractUserId(String token) {
         Number userId = extractClaims(token).get("userId", Number.class);
-        return userId.intValue();
+        return userId.longValue();
     }
 
     public boolean isTokenValid(String token) {

@@ -12,6 +12,9 @@ import ru.ivt.subscriptiontracker.app.subscription.mapper.SubscriptionMapper;
 import ru.ivt.subscriptiontracker.app.subscription.repository.SubscriptionRepository;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.service.UserService;
+import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
+import ru.ivt.subscriptiontracker.app.category.exception.CategoryNotFoundException;
+import ru.ivt.subscriptiontracker.app.category.repository.CategoryRepository;
 
 import java.util.List;
 
@@ -22,6 +25,7 @@ public class SubscriptionService {
     private final UserService userService;
     private final CurrentUserService currentUserService;
     private final SubscriptionMapper subscriptionMapper;
+    private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public List<SubscriptionResponse> findMySubscriptions() {
@@ -39,6 +43,9 @@ public class SubscriptionService {
         SubscriptionEntity subscriptionEntity =
                 subscriptionMapper.toEntity(subscriptionRequest);
 
+        CategoryEntity category = findCategoryById(subscriptionRequest.categoryId());
+        subscriptionEntity.setCategory(category);
+
         subscriptionEntity.setUser(user);
 
         return subscriptionMapper.toResponse(
@@ -46,20 +53,35 @@ public class SubscriptionService {
         );
     }
 
+
     @Transactional
-    public SubscriptionResponse updateMySubscriptions(Long id, SubscriptionRequest subscriptionRequest) {
+    public SubscriptionResponse updateMySubscriptions(
+            Long id,
+            SubscriptionRequest subscriptionRequest
+    ) {
         SubscriptionEntity subscriptionEntity = requiredOwnSubscription(id);
 
-        subscriptionMapper.updateEntity(subscriptionRequest, subscriptionEntity);
+        CategoryEntity category = findCategoryById(subscriptionRequest.categoryId());
 
-        return subscriptionMapper.toResponse(subscriptionRepository.save(subscriptionEntity));
+        subscriptionMapper.updateEntity(subscriptionRequest, subscriptionEntity);
+        subscriptionEntity.setCategory(category);
+
+        return subscriptionMapper.toResponse(
+                subscriptionRepository.save(subscriptionEntity)
+        );
     }
+
 
     @Transactional
     public void deleteMySubscriptions(Long id) {
         SubscriptionEntity subscriptionEntity = requiredOwnSubscription(id);
 
         subscriptionRepository.delete(subscriptionEntity);
+    }
+
+    private CategoryEntity findCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
     }
 
     private SubscriptionEntity requiredOwnSubscription(Long id) {

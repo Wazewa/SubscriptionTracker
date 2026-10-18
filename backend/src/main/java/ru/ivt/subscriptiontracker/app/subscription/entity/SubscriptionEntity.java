@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
+import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +28,10 @@ public class SubscriptionEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoryEntity category;
 
     @Size(max = 100)
     @Column(name = "name", nullable = false, length = 100)

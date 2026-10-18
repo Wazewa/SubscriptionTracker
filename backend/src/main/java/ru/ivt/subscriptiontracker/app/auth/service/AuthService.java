@@ -102,7 +102,8 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 user.getUserId(),
-                user.getEmail()
+                user.getEmail(),
+                user.getTokenVersion()
         );
 
         return new AuthResponse(token);
@@ -161,10 +162,11 @@ public class AuthService {
                     "New password must be different from the current one"
             );
         }
-
+        
         user.setPasswordHash(
                 passwordEncoder.encode(request.newPassword())
         );
+        user.setTokenVersion(user.getTokenVersion() + 1);
 
         userRepository.save(user);
     }

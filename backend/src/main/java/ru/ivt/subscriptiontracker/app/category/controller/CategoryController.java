@@ -1,6 +1,9 @@
 package ru.ivt.subscriptiontracker.app.category.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +22,13 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @Operation(summary = "Получить список категорий", description = "Возвращает список " +
+            "категорий (может быть пустым)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Данные о всех категориях успешно получены")
+    })
+    @SecurityRequirements
     @GetMapping
-    @Operation(summary = "Получить список категорий")
     public List<CategoryResponse> getAllCategories() {
         return categoryService.getAllCategories();
     }

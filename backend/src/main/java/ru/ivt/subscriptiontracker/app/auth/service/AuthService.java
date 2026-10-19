@@ -79,7 +79,7 @@ public class AuthService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
 
         String normalizedEmail = request.email()

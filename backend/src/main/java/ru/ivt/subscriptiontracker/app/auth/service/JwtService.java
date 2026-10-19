@@ -26,7 +26,7 @@ public class JwtService {
         this.expirationMs = expirationMs * 1000;
     }
 
-    public String generateToken(Integer userId, String email, int tokenVersion) {
+    public String generateToken(Long userId, String email, int tokenVersion) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 

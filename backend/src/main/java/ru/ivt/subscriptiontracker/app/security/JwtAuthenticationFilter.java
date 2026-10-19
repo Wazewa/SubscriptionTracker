@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = jwtService.extractEmail(token);
         int tokenVersion = jwtService.extractTokenVersion(token);
 
-        Optional<User> user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmailIgnoreCase(email);
         if (user.isEmpty() || user.get().getTokenVersion() != tokenVersion) {
             filterChain.doFilter(request, response);
             return;

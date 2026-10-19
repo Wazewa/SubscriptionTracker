@@ -12,6 +12,7 @@ import ru.ivt.subscriptiontracker.app.dto.response.ApiError;
 import ru.ivt.subscriptiontracker.app.subscription.exception.SubscriptionNotFoundException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
+import ru.ivt.subscriptiontracker.app.category.exception.CategoryNotFoundException;
 
 import java.time.Instant;
 
@@ -86,6 +87,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleUserNotFound(
             UserNotFoundException exception
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ApiError> handleCategoryNotFound(
+            CategoryNotFoundException exception
     ) {
         return buildError(
                 HttpStatus.NOT_FOUND,

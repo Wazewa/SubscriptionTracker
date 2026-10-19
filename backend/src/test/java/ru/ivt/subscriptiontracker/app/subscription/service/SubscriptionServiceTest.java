@@ -20,6 +20,8 @@ import ru.ivt.subscriptiontracker.app.subscription.mapper.SubscriptionMapper;
 import ru.ivt.subscriptiontracker.app.subscription.repository.SubscriptionRepository;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.service.UserService;
+import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
+import ru.ivt.subscriptiontracker.app.category.repository.CategoryRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,6 +46,7 @@ class SubscriptionServiceTest {
     @Mock private UserService userService;
     @Mock private CurrentUserService currentUserService;
     @Mock private SubscriptionMapper subscriptionMapper;
+    @Mock private CategoryRepository categoryRepository;
 
     @InjectMocks private SubscriptionService subscriptionService;
 
@@ -52,15 +55,16 @@ class SubscriptionServiceTest {
     private SubscriptionEntity ownSubscription;
     private SubscriptionEntity otherSubscription;
     private SubscriptionRequest validRequest;
+    private CategoryEntity category;
 
     @BeforeEach
     void setUp() {
         currentUser = new User();
-        currentUser.setUserId(1);
+        currentUser.setUserId(1L);
         currentUser.setEmail("me@example.com");
 
         otherUser = new User();
-        otherUser.setUserId(2);
+        otherUser.setUserId(2L);
         otherUser.setEmail("other@example.com");
 
         ownSubscription = new SubscriptionEntity();
@@ -70,6 +74,13 @@ class SubscriptionServiceTest {
         otherSubscription = new SubscriptionEntity();
         otherSubscription.setId(20L);
         otherSubscription.setUser(otherUser);
+
+        category = new CategoryEntity();
+        category.setId(1L);
+        category.setName("Развлечения");
+
+        ownSubscription.setCategory(category);
+        otherSubscription.setCategory(category);
 
         validRequest = new SubscriptionRequest(
                 "Netflix",
@@ -101,13 +112,14 @@ class SubscriptionServiceTest {
             when(userService.findByEmail("me@example.com")).thenReturn(currentUser);
             when(subscriptionMapper.toEntity(validRequest)).thenReturn(ownSubscription);
             when(subscriptionRepository.save(ownSubscription)).thenReturn(ownSubscription);
-            when(subscriptionMapper.toResponse(ownSubscription))
-                    .thenReturn(response(10L));
+            when(subscriptionMapper.toResponse(ownSubscription)).thenReturn(response(10L));
+            when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
 
             SubscriptionResponse result =
                     subscriptionService.createSubscription(validRequest);
 
             assertThat(result.id()).isEqualTo(10L);
+            assertThat(ownSubscription.getCategory()).isEqualTo(category);
             verify(subscriptionMapper).toEntity(validRequest);
             verify(subscriptionRepository).save(ownSubscription);
         }
@@ -123,11 +135,13 @@ class SubscriptionServiceTest {
             when(subscriptionMapper.toEntity(validRequest)).thenReturn(fresh);
             when(subscriptionRepository.save(fresh)).thenReturn(fresh);
             when(subscriptionMapper.toResponse(fresh)).thenReturn(response(10L));
+            when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
 
             subscriptionService.createSubscription(validRequest);
 
             assertThat(fresh.getUser()).isEqualTo(currentUser);
-            assertThat(fresh.getUser().getUserId()).isEqualTo(1);
+            assertThat(fresh.getUser().getUserId()).isEqualTo(1L);
+            assertThat(fresh.getCategory()).isEqualTo(category);
 
             ArgumentCaptor<SubscriptionEntity> captor =
                     ArgumentCaptor.forClass(SubscriptionEntity.class);
@@ -202,6 +216,8 @@ class SubscriptionServiceTest {
                     .thenReturn(Optional.of(ownSubscription));
             when(subscriptionRepository.save(ownSubscription))
                     .thenReturn(ownSubscription);
+            when(categoryRepository.findById(1L))
+                    .thenReturn(Optional.of(category));
 
             SubscriptionResponse resp = response(10L);
             when(subscriptionMapper.toResponse(ownSubscription)).thenReturn(resp);
@@ -210,6 +226,7 @@ class SubscriptionServiceTest {
                     subscriptionService.updateMySubscriptions(10L, validRequest);
 
             assertThat(result).isEqualTo(resp);
+            assertThat(ownSubscription.getCategory()).isEqualTo(category);
             verify(subscriptionMapper).updateEntity(validRequest, ownSubscription);
             verify(subscriptionRepository).save(ownSubscription);
         }

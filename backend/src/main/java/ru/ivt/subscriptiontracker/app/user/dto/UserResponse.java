@@ -1,7 +1,7 @@
 package ru.ivt.subscriptiontracker.app.user.dto;
 
 public record UserResponse(
-        Integer userId,
+        Long userId,
         String email,
         String baseCurrency,
         String status

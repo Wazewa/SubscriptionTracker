@@ -19,7 +19,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Интеграционные тесты модуля авторизации (/api/auth)")
+@DisplayName("РРЅС‚РµРіСЂР°С†РёРѕРЅРЅС‹Рµ С‚РµСЃС‚С‹ РјРѕРґСѓР»СЏ Р°РІС‚РѕСЂРёР·Р°С†РёРё (/api/auth)")
 public class AuthIntegrationTest extends BaseApiTest {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -49,11 +49,11 @@ public class AuthIntegrationTest extends BaseApiTest {
     }
 
     @Nested
-    @DisplayName("1.1 Позитивные сценарии")
+    @DisplayName("1.1 РџРѕР·РёС‚РёРІРЅС‹Рµ СЃС†РµРЅР°СЂРёРё")
     class PositiveScenarios {
 
         @Test
-        @DisplayName("ID 1: Успешная авторизация (возвращает 200 и JWT токен)")
+        @DisplayName("ID 1: РЈСЃРїРµС€РЅР°СЏ Р°РІС‚РѕСЂРёР·Р°С†РёСЏ (РІРѕР·РІСЂР°С‰Р°РµС‚ 200 Рё JWT С‚РѕРєРµРЅ)")
         void testSuccessfulLogin() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -72,7 +72,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 2: Проверка JWT после авторизации")
+        @DisplayName("ID 2: РџСЂРѕРІРµСЂРєР° JWT РїРѕСЃР»Рµ Р°РІС‚РѕСЂРёР·Р°С†РёРё")
         void testJwtStructureAndClaims() throws Exception {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -124,7 +124,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 3: Доступ с действующим JWT")
+        @DisplayName("ID 3: Р”РѕСЃС‚СѓРї СЃ РґРµР№СЃС‚РІСѓСЋС‰РёРј JWT")
         void testAccessProtectedResourceWithValidToken() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -155,11 +155,11 @@ public class AuthIntegrationTest extends BaseApiTest {
     }
 
     @Nested
-    @DisplayName("1.2 Негативные сценарии")
+    @DisplayName("1.2 РќРµРіР°С‚РёРІРЅС‹Рµ СЃС†РµРЅР°СЂРёРё")
     class NegativeScenarios {
 
         @Test
-        @DisplayName("ID 4: Неверный пароль -> 401")
+        @DisplayName("ID 4: РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ -> 401")
         void testLoginWithWrongPassword() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -179,7 +179,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 5: Несуществующий email -> 401")
+        @DisplayName("ID 5: РќРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ email -> 401")
         void testLoginWithNonExistentEmail() {
             Map<String, String> loginRequest = Map.of(
                     "email", "unknown_user_" + UUID.randomUUID() + "@gmail.com",
@@ -199,7 +199,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 6: Пустой email -> 400")
+        @DisplayName("ID 6: РџСѓСЃС‚РѕР№ email -> 400")
         void testLoginWithEmptyEmail() {
             Map<String, String> loginRequest = Map.of(
                     "email", "",
@@ -219,7 +219,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 7: Пустой пароль -> 400")
+        @DisplayName("ID 7: РџСѓСЃС‚РѕР№ РїР°СЂРѕР»СЊ -> 400")
         void testLoginWithEmptyPassword() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -242,7 +242,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 7.1: Короткий пароль -> 400")
+        @DisplayName("ID 7.1: РљРѕСЂРѕС‚РєРёР№ РїР°СЂРѕР»СЊ -> 400")
         void testLoginWithShortPassword() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -262,7 +262,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 8: Некорректный формат email -> 400")
+        @DisplayName("ID 8: РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ С„РѕСЂРјР°С‚ email -> 400")
         void testLoginWithInvalidEmailFormat() {
             Map<String, String> loginRequest = Map.of(
                     "email", "ivanov.gmail.com",
@@ -282,7 +282,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 9: Отсутствующий JWT -> 401")
+        @DisplayName("ID 9: РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РёР№ JWT -> 401")
         void testAccessWithoutToken() {
             given()
                     .when()
@@ -295,7 +295,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 10: Некорректный JWT -> 401")
+        @DisplayName("ID 10: РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ JWT -> 401")
         void testAccessWithInvalidToken() {
             given()
                     .header("Authorization", "Bearer invalid.token.value")
@@ -309,7 +309,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 11: Просроченный JWT -> 401")
+        @DisplayName("ID 11: РџСЂРѕСЃСЂРѕС‡РµРЅРЅС‹Р№ JWT -> 401")
         void testAccessWithExpiredToken() {
             String expiredHeader = Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(
@@ -345,7 +345,7 @@ public class AuthIntegrationTest extends BaseApiTest {
         }
 
         @Test
-        @DisplayName("ID 12: Изменённый JWT -> 401")
+        @DisplayName("ID 12: РР·РјРµРЅС‘РЅРЅС‹Р№ JWT -> 401")
         void testAccessWithTamperedToken() {
             Map<String, String> loginRequest = Map.of(
                     "email", validEmail,
@@ -376,9 +376,9 @@ public class AuthIntegrationTest extends BaseApiTest {
                     .body("timestamp", notNullValue());
         }
         @Test
-        @DisplayName("ID 13: Успешная авторизация с email в другом регистре (регистронезависимость)")
+        @DisplayName("ID 13: РЈСЃРїРµС€РЅР°СЏ Р°РІС‚РѕСЂРёР·Р°С†РёСЏ СЃ email РІ РґСЂСѓРіРѕРј СЂРµРіРёСЃС‚СЂРµ (СЂРµРіРёСЃС‚СЂРѕРЅРµР·Р°РІРёСЃРёРјРѕСЃС‚СЊ)")
         void testSuccessfulLoginWithDifferentCaseEmail() {
-            // validEmail создается в beforeEach в нижнем регистре
+            // validEmail СЃРѕР·РґР°РµС‚СЃСЏ РІ beforeEach РІ РЅРёР¶РЅРµРј СЂРµРіРёСЃС‚СЂРµ
             String mixedCaseEmail = validEmail.toUpperCase();
 
             Map<String, String> loginRequest = Map.of(

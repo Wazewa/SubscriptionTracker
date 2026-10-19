@@ -80,7 +80,7 @@ class AuthRegisterIntegrationTest  {
         return "user_" + UUID.randomUUID() + "@example.com";
     }
     @Test
-    @DisplayName("Успешная регистрация пользователя")
+    @DisplayName("РЈСЃРїРµС€РЅР°СЏ СЂРµРіРёСЃС‚СЂР°С†РёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ")
     void register_Success() throws Exception {
         String email = uniqueEmail();
 
@@ -90,12 +90,12 @@ class AuthRegisterIntegrationTest  {
         JsonNode json = mapper.readTree(response.body());
         assertEquals(email, json.get("email").asText());
         assertNotNull(json.get("userId"));
-        assertFalse(json.has("password"), "Пароль не должен возвращаться в ответе");
-        assertFalse(json.has("passwordHash"), "Хеш пароля не должен возвращаться в ответе");
+        assertFalse(json.has("password"), "РџР°СЂРѕР»СЊ РЅРµ РґРѕР»Р¶РµРЅ РІРѕР·РІСЂР°С‰Р°С‚СЊСЃСЏ РІ РѕС‚РІРµС‚Рµ");
+        assertFalse(json.has("passwordHash"), "РҐРµС€ РїР°СЂРѕР»СЏ РЅРµ РґРѕР»Р¶РµРЅ РІРѕР·РІСЂР°С‰Р°С‚СЊСЃСЏ РІ РѕС‚РІРµС‚Рµ");
     }
 
     @Test
-    @DisplayName("Ошибка: регистрация с уже существующим email")
+    @DisplayName("РћС€РёР±РєР°: СЂРµРіРёСЃС‚СЂР°С†РёСЏ СЃ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј email")
     void register_DuplicateEmail() throws Exception {
         String email = uniqueEmail();
 
@@ -106,7 +106,7 @@ class AuthRegisterIntegrationTest  {
     }
 
     @Test
-    @DisplayName("Ошибка валидации: некорректный формат email")
+    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ С„РѕСЂРјР°С‚ email")
     void register_InvalidEmail() throws Exception {
         HttpResponse<String> response = register(validBody("invalid-email-format"));
 
@@ -114,7 +114,7 @@ class AuthRegisterIntegrationTest  {
     }
 
     @Test
-    @DisplayName("Ошибка валидации: слишком короткий пароль")
+    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: СЃР»РёС€РєРѕРј РєРѕСЂРѕС‚РєРёР№ РїР°СЂРѕР»СЊ")
     void register_ShortPassword() throws Exception {
         HttpResponse<String> response = register(body(uniqueEmail(), "123", "123", true));
 
@@ -122,7 +122,7 @@ class AuthRegisterIntegrationTest  {
     }
 
     @Test
-    @DisplayName("Ошибка валидации: нет согласия на обработку данных")
+    @DisplayName("РћС€РёР±РєР° РІР°Р»РёРґР°С†РёРё: РЅРµС‚ СЃРѕРіР»Р°СЃРёСЏ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РґР°РЅРЅС‹С…")
     void register_NoAgreement() throws Exception {
         HttpResponse<String> response =
                 register(body(uniqueEmail(), "SecurePass123", "SecurePass123", false));
@@ -131,7 +131,7 @@ class AuthRegisterIntegrationTest  {
     }
 
     @Test
-    @DisplayName("Ошибка: регистрация с уже существующим email в другом регистре")
+    @DisplayName("РћС€РёР±РєР°: СЂРµРіРёСЃС‚СЂР°С†РёСЏ СЃ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј email РІ РґСЂСѓРіРѕРј СЂРµРіРёСЃС‚СЂРµ")
     void register_DuplicateEmailDifferentCase() throws Exception {
         String email = uniqueEmail();
         String upperCaseEmail = email.toUpperCase();

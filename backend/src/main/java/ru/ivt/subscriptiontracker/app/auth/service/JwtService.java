@@ -26,19 +26,24 @@ public class JwtService {
         this.expirationMs = expirationMs * 1000;
     }
 
-    public String generateToken(Long userId, String email) {
+    public String generateToken(Integer userId, String email, int tokenVersion) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
+                .claim("tv", tokenVersion)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
     }
 
+    public int extractTokenVersion(String token) {
+        Number tv = extractClaims(token).get("tv", Number.class);
+        return tv == null ? 0 : tv.intValue();
+    }
     public String extractEmail(String token) {
         return extractClaims(token).getSubject();
     }

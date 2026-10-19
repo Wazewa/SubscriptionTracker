@@ -35,6 +35,9 @@ public class User {
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 0;
+
     @Column(name = "password_hash", nullable = false, length = 128)
     private String passwordHash;
 

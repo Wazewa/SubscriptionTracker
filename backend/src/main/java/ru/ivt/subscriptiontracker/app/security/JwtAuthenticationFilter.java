@@ -10,16 +10,21 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.ivt.subscriptiontracker.app.auth.service.JwtService;
+import ru.ivt.subscriptiontracker.app.user.entity.User;
+import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -45,7 +50,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+
         String email = jwtService.extractEmail(token);
+        int tokenVersion = jwtService.extractTokenVersion(token);
+
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty() || user.get().getTokenVersion() != tokenVersion) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(

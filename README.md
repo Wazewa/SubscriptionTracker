@@ -105,6 +105,12 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 | POST  | `/api/auth/login`    | Логин (JWT)       |
 | GET   | `/api/auth/me`       | Профиль по токену |
 | GET   | `/health`            | Healthcheck       |
+| GET   | `/api/categories`            | Справочник категорий (нужен токен) |
+| GET   | `/api/subscriptions/me`      | Мои подписки (нужен токен) |
+| POST  | `/api/subscriptions`         | Создать подписку (нужен токен) |
+| PUT   | `/api/subscriptions/{id}`    | Обновить подписку (нужен токен) |
+| DELETE| `/api/subscriptions/{id}`    | Удалить подписку (нужен токен) |
+| PATCH | `/api/auth/change-password`  | Смена пароля (нужен токен) |
 
 ## Структура backend
 
@@ -113,9 +119,11 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 - `auth/` — регистрация, логин, JWT, DTO, exceptions
 - `user/` — entity `User`, репозиторий, exceptions
 - `config/` — `SecurityConfig`, `OpenApiConfig`
-- `security/` — `JwtAuthenticationFilter`
+- `security/` — `JwtAuthenticationFilter`, `CurrentUserService`
 - `exception/` — `GlobalExceptionHandler`
 - `dto/response/` — общие DTO (`ApiError`)
+- `category/` — справочник категорий (Entity, Service, Controller)
+- `subscription/` — CRUD подписок (Entity, Mapper, Service, Controller)
 
 ## Порты
 
@@ -188,7 +196,6 @@ mvn test -Dtest=HealthApiTest
 
 ## Что появится в ближайшее время
 
-- CRUD подписок
 - Дашборд с аналитикой
 - ML-сервис и бот
 - Полноценные уведомления (email/push)

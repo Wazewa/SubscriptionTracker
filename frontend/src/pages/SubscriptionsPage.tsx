@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { createSubscriptionsApi } from '../subscriptions/api';
 import SubscriptionsTable from '../components/SubscriptionsTable';
 import Filters from '../components/Filters';
 import {
@@ -31,6 +32,7 @@ const scenarios: { value: DemoScenario; label: string }[] = [
 
 export default function SubscriptionsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [scenario, setScenario] = useState<DemoScenario>('data');
   const [filters, setFilters] =
@@ -39,20 +41,14 @@ export default function SubscriptionsPage() {
   const {
     state,
     isDemo,
-    apiEnabled,
-    categories: apiCategories,
     reload,
-  } = useSubscriptions(scenario, filters);
+  } = useSubscriptions(scenario);
 
   const allRows = state.kind === 'ready' ? state.rows : [];
 
-  const rows = isDemo
-    ? filterSubscriptions(allRows, filters)
-    : allRows;
+  const rows = filterSubscriptions(allRows, filters);
 
-  const categories = isDemo
-    ? [...new Set(allRows.map((row) => row.category))]
-    : apiCategories;
+  const categories = state.kind === 'ready' ? state.categories : [];
 
   const filtered = Boolean(
     filters.search.trim() || filters.category || filters.period,
@@ -74,7 +70,7 @@ export default function SubscriptionsPage() {
           className="mb-6 rounded-2xl border border-[#cbdcc7] bg-[#eef4e9] p-4"
         >
           <p className="text-sm">
-            Демо-данные — не реальные подписки. API пока не подключён.
+            Демо-данные — не реальные подписки. Изменения в этом режиме не сохраняются.
           </p>
 
           <div
@@ -118,9 +114,10 @@ export default function SubscriptionsPage() {
       <Filters
         value={filters}
         categories={categories}
-        disabled={isDemo ? !available : !apiEnabled}
+        disabled={!available}
         onChange={setFilters}
       />
+      {location.state?.subscriptionNotice && <p role="status" className="mb-4 text-sm text-[#285d25]">{String(location.state.subscriptionNotice)}</p>}
 
       {state.kind === 'error' ? (
         <section
@@ -158,12 +155,17 @@ export default function SubscriptionsPage() {
             loading={state.kind === 'loading'}
             filtered={filtered}
             onEdit={handleEdit}
+            isDemo={isDemo}
+            onDelete={async (subscription, token, signal) => {
+              await createSubscriptionsApi(import.meta.env.VITE_API_BASE_URL || '/api').remove(token, subscription.id, signal);
+              reload();
+            }}
           />
         </>
       )}
 
       <p className="mt-4 text-xs text-[#687468]">
-        Формы и окно удаления доступны для проверки интерфейса. Создание, изменение и удаление данных пока не подключены к API.
+        Стоимость указывается в валюте подписки. Цена/мес заполнена только для ежемесячных подписок. Для остальных периодов показана стоимость полного периода: сервер пока не возвращает месячный эквивалент.
       </p>
     </div>
   );

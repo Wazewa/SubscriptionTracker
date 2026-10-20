@@ -1,6 +1,6 @@
 
 import { useState, type FormEvent } from 'react';
-import type { Subscription } from '../subscriptions/model';
+import { currencies, localDateKey, periodLabels, type Category, type Subscription } from '../subscriptions/model';
 import { initialFormValues, validateSubscriptionForm, type FormValues, type FormErrors } from '../subscriptions/formModel';
 
 type Props = {
@@ -9,17 +9,10 @@ type Props = {
   onCancel: () => void;
   onSubmit: (values: FormValues) => void;
   notice?: string;
+  categories: Category[];
+  pending?: boolean;
+  isDemo?: boolean;
 };
-
-const categories = [
-  'Развлечения',
-  'Кино',
-  'Образование',
-  'Работа',
-  'Музыка',
-  'Покупки',
-  'Другое',
-];
 
 const inputClass =
   'mt-2 w-full rounded-xl border border-[#cbd2c8] bg-white px-4 py-3 text-sm text-[#263526] outline-none transition focus:border-[#389f6b] focus:ring-2 focus:ring-[#389f6b]/20';
@@ -30,9 +23,11 @@ export default function SubscriptionForm({
   onCancel,
   onSubmit,
   notice,
+  categories,
+  pending = false,
+  isDemo = false,
 }: Props) {
   const [values, setValues] = useState<FormValues>(() => initialFormValues(initialSubscription));
-  const categoryOptions = [...new Set([...categories, ...(initialSubscription?.category ? [initialSubscription.category] : [])])];
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState('');
@@ -48,8 +43,9 @@ export default function SubscriptionForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
 
-    const validationErrors = validateSubscriptionForm(values);
+    const validationErrors = validateSubscriptionForm(values, categories);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -64,8 +60,10 @@ export default function SubscriptionForm({
     <section className="w-full min-w-0">
 
       <div className="w-full max-w-[680px] rounded-3xl border border-[#e3e7df] bg-white p-5 shadow-sm sm:p-8">
-        <p className="mb-5 rounded-xl bg-[#eef4e9] p-3 text-sm text-[#285d25]">Предпросмотр формы: API сохранения пока не подключён. Данные не создаются и не изменяются.</p>
-        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+        {isDemo && <p className="mb-5 rounded-xl bg-[#eef4e9] p-3 text-sm text-[#285d25]">Демо-режим: изменения не сохраняются на сервере.</p>}
+        {!categories.length && <p role="status" className="mb-5 text-sm">В справочнике нет категорий. Сохранение недоступно, пока backend не заполнит справочник.</p>}
+        <form className="space-y-5" onSubmit={handleSubmit} noValidate aria-busy={pending}>
+          <fieldset disabled={pending} className="min-w-0 space-y-5">
           <div>
             <label htmlFor="subscription-name" className="block text-sm font-semibold text-[#285d25]">
               Название
@@ -74,6 +72,7 @@ export default function SubscriptionForm({
               id="subscription-name"
               className={inputClass}
               placeholder="Например: Spotify"
+              maxLength={100}
               value={values.name}
               onChange={(event) => update('name', event.target.value)}
               aria-invalid={Boolean(errors.name)}
@@ -84,7 +83,7 @@ export default function SubscriptionForm({
 
           <div>
             <label htmlFor="subscription-price" className="block text-sm font-semibold text-[#285d25]">
-              Стоимость за месяц, ₽
+              Стоимость за период
             </label>
             <input
               id="subscription-price"
@@ -100,6 +99,12 @@ export default function SubscriptionForm({
             {errors.price && <p id="price-error" role="alert" className="mt-1 text-sm text-red-600">{errors.price}</p>}
           </div>
 
+          <label className="block text-sm font-semibold text-[#285d25]">Валюта
+            <select value={values.currency} onChange={(event) => update('currency', event.target.value as FormValues['currency'])} className={inputClass}>
+              {currencies.map((currency) => <option key={currency}>{currency}</option>)}
+            </select>
+          </label>
+
           <div>
             <label htmlFor="subscription-period" className="block text-sm font-semibold text-[#285d25]">
               Период списания
@@ -112,11 +117,15 @@ export default function SubscriptionForm({
               aria-invalid={Boolean(errors.period)}
               aria-describedby={errors.period ? 'period-error' : undefined}
             >
-              <option value="monthly">Ежемесячно</option>
-              <option value="yearly">Ежегодно</option>
+              {Object.entries(periodLabels).map(([period, label]) => <option key={period} value={period}>{label}</option>)}
             </select>
             {errors.period && <p id="period-error" role="alert" className="mt-1 text-sm text-red-600">{errors.period}</p>}
           </div>
+
+          {values.period === 'custom' && <label className="block text-sm font-semibold text-[#285d25]">Количество дней
+            <input inputMode="numeric" value={values.periodDays} onChange={(event) => update('periodDays', event.target.value)} className={inputClass} aria-invalid={Boolean(errors.periodDays)} aria-describedby={errors.periodDays ? 'days-error' : undefined} />
+            {errors.periodDays && <span id="days-error" role="alert" className="mt-1 block text-sm text-red-600">{errors.periodDays}</span>}
+          </label>}
 
           <div>
             <label htmlFor="subscription-date" className="block text-sm font-semibold text-[#285d25]">
@@ -125,6 +134,7 @@ export default function SubscriptionForm({
             <input
               id="subscription-date"
               type="date"
+              min={localDateKey()}
               className={inputClass}
               value={values.nextPaymentDate}
               onChange={(event) => update('nextPaymentDate', event.target.value)}
@@ -147,8 +157,9 @@ export default function SubscriptionForm({
               aria-describedby={errors.category ? 'category-error' : undefined}
             >
               <option value="">Выберите категорию</option>
-              {categoryOptions.map((category) => (
-                <option key={category} value={category}>{category}</option>
+              {initialSubscription && !categories.some((item) => item.id === values.category) && values.category && <option value={values.category} disabled>{initialSubscription.category} — недоступна</option>}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
             {errors.category && <p id="category-error" role="alert" className="mt-1 text-sm text-red-600">{errors.category}</p>}
@@ -157,14 +168,15 @@ export default function SubscriptionForm({
           {message && (
             <p role="status" className="text-sm text-red-600">{message}</p>
           )}
-          {notice && <p role="status" className="text-sm text-[#285d25]">{notice}</p>}
+          {notice && <p role="alert" className="text-sm text-red-700">{notice}</p>}
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <button
               type="submit"
+              disabled={pending || !categories.length}
               className="w-full rounded-full bg-[#389f6b] px-6 py-3 font-semibold text-white transition hover:bg-[#2e8c5c] focus:outline-none focus:ring-2 focus:ring-[#389f6b] focus:ring-offset-2 sm:flex-1"
             >
-              {mode === 'create' ? 'Сохранить' : 'Сохранить изменения'}
+              {pending ? 'Сохраняем…' : mode === 'create' ? 'Сохранить' : 'Сохранить изменения'}
             </button>
             <button
               type="button"
@@ -174,6 +186,7 @@ export default function SubscriptionForm({
               Отменить
             </button>
           </div>
+          </fieldset>
         </form>
       </div>
     </section>

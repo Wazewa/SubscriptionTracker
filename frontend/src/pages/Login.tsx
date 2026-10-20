@@ -40,6 +40,7 @@ export default function Login() {
           onSubmit={handleSubmit}
           aria-busy={pending}
         >
+          {location.state?.notice && <p role="status" className="text-sm text-[#285d25]">{String(location.state.notice)}</p>}
           <div>
             <label
               htmlFor="email"

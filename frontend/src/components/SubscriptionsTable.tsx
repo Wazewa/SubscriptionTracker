@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { formatMoney, formatPaymentDate } from '../dashboard/model';
-import { periodLabels, type Subscription } from '../subscriptions/model';
+import { formatPaymentDate } from '../dashboard/model';
+import { formatSubscriptionMoney, periodLabels, type Subscription } from '../subscriptions/model';
 import editIcon from '../assets/icons/edit.svg';
 import deleteIcon from '../assets/icons/delete.svg';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -11,6 +11,8 @@ type Props = {
   loading?: boolean;
   filtered?: boolean;
   onEdit?: (subscription: Subscription) => void;
+  isDemo?: boolean;
+  onDelete: (subscription: Subscription, token: string, signal: AbortSignal) => Promise<void>;
 };
 
 const headings = [
@@ -27,6 +29,8 @@ export default function SubscriptionsTable({
   loading = false,
   filtered = false,
   onEdit,
+  onDelete,
+  isDemo = false,
 }: Props) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null);
@@ -91,12 +95,13 @@ export default function SubscriptionsTable({
                       >
                         <span className="block">{row.name}</span>
                         <span className="mt-1 block text-xs text-[#687468]">
-                          {periodLabels[row.period]}
+                          {periodLabels[row.period]}{row.period === 'custom' ? `: ${row.periodDays} дн.` : ''}
                         </span>
                       </th>
 
                       <td className="whitespace-nowrap px-5 py-5">
-                        {formatMoney(row.monthlyPriceMinor)}
+                        {row.monthlyPriceMinor === null ? '—' : formatSubscriptionMoney(row.monthlyPriceMinor, row.currency)}
+                        {row.period !== 'monthly' && <span className="mt-1 block text-xs text-[#687468]">{formatSubscriptionMoney(row.amountMinor, row.currency)} за период</span>}
                       </td>
 
                       <td className="max-w-48 break-words px-5 py-5">
@@ -117,7 +122,7 @@ export default function SubscriptionsTable({
                               : 'bg-[#f0f1ee] text-[#606960]'
                           }`}
                         >
-                          {row.active ? 'Активна' : 'Неактивна'}
+                          {{ ACTIVE: 'Активна', PAUSED: 'Приостановлена', CANCELLED: 'Отменена' }[row.status]}
                         </span>
                       </td>
 
@@ -217,10 +222,10 @@ export default function SubscriptionsTable({
         </div>
       </section>
 
-      {deleteTarget && <DeleteConfirmModal subscription={deleteTarget} onClose={() => {
+      {deleteTarget && <DeleteConfirmModal subscription={deleteTarget} isDemo={isDemo} onDelete={onDelete} onClose={() => {
         const buttonId = `subscription-actions-${deleteTarget.id}`;
         setDeleteTarget(null);
-        window.requestAnimationFrame(() => document.getElementById(buttonId)?.focus());
+        window.requestAnimationFrame(() => (document.getElementById(buttonId) || document.querySelector<HTMLElement>('[aria-label="Таблица подписок, доступна горизонтальная прокрутка"]'))?.focus());
       }} />}
     </>
   );

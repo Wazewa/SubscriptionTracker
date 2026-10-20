@@ -1,9 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuthApi, ApiError } from '../src/auth/api.ts';
+import { validatePasswordChange } from '../src/auth/password.ts';
 
 const profile = { userId: 1, email: 'test@example.com', baseCurrency: 'RUB', status: 'PENDING' };
 const reply = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+test('password change PATCH sends exact Swagger fields, bearer token and handles empty 204', async () => {
+  const payload = { currentPassword: 'old-password', newPassword: 'new-password', confirmNewPassword: 'new-password' };
+  const api = createAuthApi('/api/', async (url, options) => {
+    assert.equal(url, '/api/auth/change-password'); assert.equal(options.method, 'PATCH');
+    assert.equal(options.headers.Authorization, 'Bearer token'); assert.deepEqual(JSON.parse(options.body), payload);
+    return new Response(null, { status: 204 });
+  });
+  assert.equal(await api.changePassword('token', payload), undefined);
+  await assert.rejects(api.changePassword('', payload), (error) => error.status === 401);
+});
+test('password change validation and known backend errors do not expose secrets', async () => {
+  const valid = { currentPassword: 'old-password', newPassword: 'new-password', confirmNewPassword: 'new-password' };
+  assert.deepEqual(validatePasswordChange(valid), {});
+  for (const patch of [{ currentPassword: '' }, { newPassword: 'short' }, { newPassword: 'old-password' }, { confirmNewPassword: '' }, { newPassword: 'я'.repeat(40) }]) assert.ok(Object.keys(validatePasswordChange({ ...valid, ...patch })).length);
+  const api = createAuthApi('/api', async () => reply({ message: 'Current password is incorrect' }, 400));
+  await assert.rejects(api.changePassword('token', valid), /Текущий пароль неверен/);
+  const cancelled = new AbortController(); cancelled.abort();
+  await assert.rejects(api.changePassword('token', valid, cancelled.signal), { name: 'AbortError' });
+  const unexpected = createAuthApi('/api', async () => reply({ message: 'not a confirmed change' }));
+  await assert.rejects(unexpected.changePassword('token', valid), /Не удалось подтвердить смену пароля/);
+});
 
 test('login and profile preserve API prefix and use Bearer token', async () => {
   const calls = [];

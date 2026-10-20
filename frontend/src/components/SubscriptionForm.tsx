@@ -168,7 +168,7 @@ export default function SubscriptionForm({
           {message && (
             <p role="status" className="text-sm text-red-600">{message}</p>
           )}
-          {notice && <p role="alert" className="text-sm text-red-700">{notice}</p>}
+          {notice && <p className="text-sm text-red-700">{notice}</p>}
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <button

@@ -9,6 +9,7 @@ import SubscriptionsPage from './pages/SubscriptionsPage';
 import Dashboard from './pages/Dashboard';
 import NewSubscription from './pages/NewSubscription';
 import EditSubscription from './pages/EditSubscription';
+import { ToastProvider } from './notifications/ToastProvider';
 
 function ProtectedRoute() {
   const { user, loading } = useAuth();
@@ -38,7 +39,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
           </Route>
           <Route element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
+            <Route element={<ToastProvider><AppLayout /></ToastProvider>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/subscriptions/new" element={<NewSubscription />} />

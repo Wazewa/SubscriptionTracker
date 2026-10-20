@@ -70,8 +70,8 @@ export default function Register() {
     <main className="flex min-h-screen flex-col items-center bg-[#f7f8f4] px-4 py-6">
       <Logo />
 
-      <section className="mt-2 w-full max-w-[504px] rounded-[26px] border border-[#eeeeea] bg-white px-8 py-2 shadow-[0_2px_6px_rgba(0,0,0,0.12)] sm:px-[52px]">
-        <h2 className="mb-1 text-center text-[23px] font-bold text-[#123d12]">
+      <section className="mt-2 w-full max-w-[504px] rounded-[26px] border border-[#eeeeea] bg-white px-5 py-2 shadow-[0_2px_6px_rgba(0,0,0,0.12)] sm:px-[52px]">
+        <h2 className="mb-1 break-words text-center text-xl font-bold text-[#123d12] sm:text-[23px]">
           Зарегистрироваться
         </h2>
 
@@ -183,7 +183,7 @@ export default function Register() {
             type="submit"
             disabled={!canAgree || pending}
             aria-describedby="registration-unavailable consent-note"
-            className="font-unbounded mt-1 w-full rounded-full bg-[#3ba273] py-[9px] text-[20px] font-bold text-white transition-colors hover:bg-[#318b62] active:bg-[#287650] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="font-unbounded mt-1 min-h-11 w-full break-words rounded-full bg-[#3ba273] px-2 py-[9px] text-sm font-bold text-white transition-colors hover:bg-[#318b62] active:bg-[#287650] disabled:opacity-50 disabled:cursor-not-allowed sm:text-[20px]"
           >
             {pending ? 'Создаём аккаунт…' : 'Зарегистрироваться'}
           </button>

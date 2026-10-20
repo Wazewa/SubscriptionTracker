@@ -18,6 +18,7 @@ public interface SubscriptionMapper {
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
     SubscriptionEntity toEntity(SubscriptionRequest subscriptionRequest);
 
     @Mapping(target = "createdAt", ignore = true)
@@ -25,6 +26,7 @@ public interface SubscriptionMapper {
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
     void updateEntity(
             SubscriptionRequest subscriptionRequest,
             @MappingTarget SubscriptionEntity subscriptionEntity

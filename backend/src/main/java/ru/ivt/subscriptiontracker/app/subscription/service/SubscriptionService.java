@@ -45,6 +45,7 @@ public class SubscriptionService {
 
         CategoryEntity category = findCategoryById(subscriptionRequest.categoryId());
         subscriptionEntity.setCategory(category);
+        subscriptionEntity.setStatus("ACTIVE");
 
         subscriptionEntity.setUser(user);
 

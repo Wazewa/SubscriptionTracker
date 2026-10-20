@@ -1,8 +1,10 @@
 package ru.ivt.subscriptiontracker.app.subscription.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import ru.ivt.subscriptiontracker.app.subscription.entity.Currency;
+import ru.ivt.subscriptiontracker.app.subscription.entity.PeriodType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,10 +32,9 @@ public record SubscriptionRequest(
         @FutureOrPresent(message = "Next payment date must be today or in the future")
         LocalDate nextPaymentDate,
 
-        @Schema(description = "Периодичность (например, MONTHLY, YEARLY, CUSTOM)", example = "MONTHLY", maxLength = 20, requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotBlank(message = "Period is required")
-        @Size(max = 20, message = "Period must be at most 20 characters")
-        String period,
+        @Schema(description = "Периодичность", example = "CUSTOM", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull(message = "Period is required")
+        PeriodType period,
 
         @Schema(description = "Количество дней (обязательно только для period=CUSTOM, иначе null)", example = "30", nullable = true)
         Integer periodDays,
@@ -44,9 +45,11 @@ public record SubscriptionRequest(
         Long categoryId
 
 ) {
+        @Schema(hidden = true)
+        @JsonIgnore
         @AssertTrue(message = "Period days is required for CUSTOM period and must be null otherwise")
         public boolean isPeriodDaysValid() {
-                if (Objects.equals(period, "CUSTOM")) {
+                if (period == PeriodType.CUSTOM) {
                         return periodDays != null && periodDays > 0;
                 }
                 return periodDays == null;

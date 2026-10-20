@@ -8,12 +8,12 @@ import jakarta.validation.constraints.Size;
 @Schema(description = "Запрос на аутентификацию пользователя")
 public record LoginRequest(
 
-        @Schema(description = "Email пользователя", example = "user@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Email пользователя", example = "12345678@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Email is required")
         @Email(message = "Email must be valid")
         String email,
 
-        @Schema(description = "Пароль пользователя", example = "SecurePass123!", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Пароль пользователя", example = "12345678", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Password is required")
         @Size(min = 8, message = "Password must contain at least 8 characters")
         String password

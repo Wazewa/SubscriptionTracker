@@ -13,6 +13,7 @@ import ru.ivt.subscriptiontracker.app.security.CurrentUserService;
 import ru.ivt.subscriptiontracker.app.subscription.dto.SubscriptionRequest;
 import ru.ivt.subscriptiontracker.app.subscription.dto.SubscriptionResponse;
 import ru.ivt.subscriptiontracker.app.subscription.entity.Currency;
+import ru.ivt.subscriptiontracker.app.subscription.entity.PeriodType;
 import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionEntity;
 import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionStatus;
 import ru.ivt.subscriptiontracker.app.subscription.exception.SubscriptionNotFoundException;
@@ -87,7 +88,7 @@ class SubscriptionServiceTest {
                 new BigDecimal("15.00"),
                 Currency.USD,
                 FIXED_DATE,
-                "MONTHLY",
+                PeriodType.MONTHLY,
                 null,
                 1L
         );

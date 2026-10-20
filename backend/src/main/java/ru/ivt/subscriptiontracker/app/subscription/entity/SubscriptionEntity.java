@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.*;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
 
@@ -40,7 +38,6 @@ public class SubscriptionEntity {
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
-    @Size(max = 3)
     @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false, length = 3)
     private Currency currency;
@@ -48,9 +45,9 @@ public class SubscriptionEntity {
     @Column(name = "next_payment_date", nullable = false)
     private LocalDate nextPaymentDate;
 
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @Column(name = "period", nullable = false, length = 20)
-    private String period;
+    private PeriodType period;
 
     @Column(name = "period_days")
     private Integer periodDays;
@@ -60,11 +57,11 @@ public class SubscriptionEntity {
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 }

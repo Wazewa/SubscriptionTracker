@@ -1,5 +1,7 @@
 package ru.ivt.subscriptiontracker.app.exception;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +18,7 @@ import ru.ivt.subscriptiontracker.app.category.exception.CategoryNotFoundExcepti
 
 import java.time.Instant;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -84,6 +87,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, "Ошибка базы данных: проверьте переданные значения");
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleUserNotFound(
             UserNotFoundException exception
@@ -106,6 +114,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleException(Exception exception) {
+        log.error("Unhandled exception caught", exception);
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal server error"

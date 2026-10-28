@@ -23,17 +23,9 @@ jobs:
       - name: Fix Docker permissions for Testcontainers
         run: sudo chmod 666 /var/run/docker.sock
 
-      - name: Start PostgreSQL for Tests
-        run: |
-          docker run -d --name test-postgres \
-            -e POSTGRES_DB=subscriptions \
-            -e POSTGRES_USER=postgres \
-            -e POSTGRES_PASSWORD=postgres \
-            -p 5433:5432 postgres:18
-            
-          sleep 5
-
       - name: Build and Run Tests
+        env:
+          JWT_SECRET: "test-secret-at-least-256-bits-long-for-hs384-signing-key-abc"
         run: |
           cd backend
           mvn clean verify
@@ -41,11 +33,6 @@ jobs:
       - name: Stop PostgreSQL
         if: always()
         run: docker stop test-postgres
-
-      - name: Build and Run Tests
-        run: |
-          cd backend
-          mvn clean verify
 
       - name: Test Docker Build
         run: |

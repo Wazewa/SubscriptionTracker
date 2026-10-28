@@ -28,7 +28,8 @@ cd tp_ivt_team9_2026
 Необходимо, чтобы `git push` отправлял изменения одновременно и в Сфера.Код, и в GitHub, выполните эти команды **один раз** после клонирования:
 
 ```sh
-# 1. Добавляем адрес GitHub как второй push-URL (не меняя основной origin)
+# 1. Добавляем адрес Сферы как первый и GitHub как второй push-URL (не меняя основной origin)
+git remote set-url --add --push origin https://ssau.saas.sferaplatform.ru/app/sourcecode/api/tp_ivt_team9_2026/tp_ivt_team9_2026.git
 git remote set-url --add --push origin https://github.com/Wazewa/SubscriptionTracker
 
 # 2. Проверяем, что теперь два адреса для push

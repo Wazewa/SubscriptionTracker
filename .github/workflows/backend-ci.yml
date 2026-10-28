@@ -20,6 +20,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Fix Docker permissions for Testcontainers
+        run: sudo chmod 666 /var/run/docker.sock
+
       - name: Build and Run Tests
         run: |
           cd backend

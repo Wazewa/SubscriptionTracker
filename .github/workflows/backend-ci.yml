@@ -29,10 +29,6 @@ jobs:
         run: |
           cd backend
           mvn clean verify
-          
-      - name: Stop PostgreSQL
-        if: always()
-        run: docker stop test-postgres
 
       - name: Test Docker Build
         run: |

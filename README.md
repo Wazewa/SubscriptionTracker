@@ -23,6 +23,18 @@ cd tp_ivt_team9_2026
 
 ## Запуск
 
+### Настройка синхронизации с GitHub
+
+Необходимо, чтобы `git push` отправлял изменения одновременно и в Сфера.Код, и в GitHub, выполните эти команды **один раз** после клонирования:
+
+```sh
+# 1. Добавляем адрес GitHub как второй push-URL (не меняя основной origin)
+git remote set-url --add --push origin https://github.com/Wazewa/SubscriptionTracker
+
+# 2. Проверяем, что теперь два адреса для push
+git remote -v
+```
+
 ### Первый запуск
 
 1. Скопируй `.env.example` в `.env`:

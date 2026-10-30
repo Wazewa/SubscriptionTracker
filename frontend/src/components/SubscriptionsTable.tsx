@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { formatPaymentDate } from '../dashboard/model';
 import { formatSubscriptionMoney, periodLabels, type Subscription } from '../subscriptions/model';
 import editIcon from '../assets/icons/edit.svg';
@@ -34,6 +34,9 @@ export default function SubscriptionsTable({
 }: Props) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null);
+  useEffect(() => {
+    if (openMenuId) document.getElementById(`subscription-menu-${openMenuId}`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [openMenuId]);
 
   return (
     <>
@@ -49,7 +52,7 @@ export default function SubscriptionsTable({
         )}
 
         <div
-          className="overflow-x-auto rounded-3xl focus-visible:outline-2 focus-visible:outline-green-700"
+          className="relative overflow-x-auto rounded-3xl focus-visible:outline-2 focus-visible:outline-green-700"
           tabIndex={0}
           role="region"
           aria-label="Таблица подписок, доступна горизонтальная прокрутка"
@@ -143,7 +146,7 @@ export default function SubscriptionsTable({
                                 current === row.id ? null : row.id,
                               )
                             }
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none text-[#315c35] hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-green-700"
+                            className="flex h-11 w-11 items-center justify-center rounded-full text-2xl leading-none text-[#315c35] hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-green-700"
                           >
                             ⋮
                           </button>
@@ -166,7 +169,7 @@ export default function SubscriptionsTable({
                                   setOpenMenuId(null);
                                   onEdit?.(row);
                                 }}
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#315c35] hover:bg-[#eef4e9] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm text-[#315c35] hover:bg-[#eef4e9] disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <img
                                   src={editIcon}
@@ -183,7 +186,7 @@ export default function SubscriptionsTable({
                                   setOpenMenuId(null);
                                   setDeleteTarget(row);
                                 }}
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm text-red-600 hover:bg-red-50"
                               >
                                 <img
                                   src={deleteIcon}

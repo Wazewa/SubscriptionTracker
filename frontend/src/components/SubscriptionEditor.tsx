@@ -4,11 +4,13 @@ import { createSubscriptionsApi } from '../subscriptions/api';
 import { subscriptionPayload, type FormValues } from '../subscriptions/formModel';
 import { useSubscriptions } from '../subscriptions/useSubscriptions';
 import SubscriptionForm from './SubscriptionForm';
+import { useToast } from '../notifications/ToastProvider';
 
 export default function SubscriptionEditor({ id }: { id?: string }) {
   const navigate = useNavigate();
   const { state, isDemo, reload } = useSubscriptions();
-  const { pending, error, run } = useApiAction();
+  const { notify } = useToast();
+  const { pending, error, run } = useApiAction((message) => notify(`Не удалось сохранить подписку. ${message}`, { kind: 'error' }));
   if (state.kind === 'loading') return <p role="status" className="skeleton max-w-[680px] rounded-3xl p-8">Загружаем форму и категории…</p>;
   if (state.kind === 'error') return <section role="alert" className="rounded-3xl bg-white p-6"><p>{state.message}</p><button type="button" onClick={reload} className="mt-4 underline">Повторить загрузку</button></section>;
   const subscription = id ? state.rows.find((row) => row.id === id) : undefined;
@@ -20,7 +22,10 @@ export default function SubscriptionEditor({ id }: { id?: string }) {
       const payload = subscriptionPayload(values, state.categories);
       return id ? api.update(token, id, payload, state.categories, signal) : api.create(token, payload, state.categories, signal);
     });
-    if (result) navigate('/subscriptions', { replace: true, state: { subscriptionNotice: id ? 'Изменения сохранены.' : 'Подписка создана.' } });
+    if (result) {
+      notify(id ? 'Подписка обновлена' : 'Подписка создана');
+      navigate('/subscriptions', { replace: true });
+    }
   }
   return <SubscriptionForm key={id || 'create'} mode={id ? 'edit' : 'create'} initialSubscription={subscription}
     categories={state.categories} pending={pending} isDemo={isDemo} notice={error} onSubmit={save} onCancel={() => navigate('/subscriptions')} />;

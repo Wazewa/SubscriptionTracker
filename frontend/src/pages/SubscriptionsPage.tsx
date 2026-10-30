@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createSubscriptionsApi } from '../subscriptions/api';
 import SubscriptionsTable from '../components/SubscriptionsTable';
 import Filters from '../components/Filters';
@@ -32,7 +32,6 @@ const scenarios: { value: DemoScenario; label: string }[] = [
 
 export default function SubscriptionsPage() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [scenario, setScenario] = useState<DemoScenario>('data');
   const [filters, setFilters] =
@@ -117,7 +116,6 @@ export default function SubscriptionsPage() {
         disabled={!available}
         onChange={setFilters}
       />
-      {location.state?.subscriptionNotice && <p role="status" className="mb-4 text-sm text-[#285d25]">{String(location.state.subscriptionNotice)}</p>}
 
       {state.kind === 'error' ? (
         <section

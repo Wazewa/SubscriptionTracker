@@ -33,6 +33,14 @@
   filter: brightness(0) saturate(100%) invert(48%) sepia(20%) saturate(1200%) hue-rotate(100deg);
 }
 
+.toast-viewport {
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
 @layer utilities {
   .font-unbounded {
     font-family: "Unbounded", sans-serif;

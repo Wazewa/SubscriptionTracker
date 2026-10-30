@@ -10,13 +10,14 @@ import accountIcon from '../assets/icons/account.svg';
 import notificationIcon from '../assets/icons/notification1.svg';
 
 const sections = [
-  { to: '/dashboard', title: 'Дашборд', subtitle: 'Сводка по вашим подпискам', icon: dashboardIcon },
+  { to: '/dashboard', title: 'Дашборд', subtitle: 'Ваши подписки в одном месте', icon: dashboardIcon },
   { to: '/subscriptions', title: 'Подписки', subtitle: 'Управляйте своими подписками', icon: subscriptionsIcon },
   { to: '/settings', title: 'Настройки', subtitle: 'Управляйте своим аккаунтом', icon: settingsIcon },
 ];
 export default function AppLayout() {
   const { user } = useAuth();
   const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
   const isNewSubscription = location.pathname === '/subscriptions/new';
   const isEditSubscription = /^\/subscriptions\/[^/]+\/edit$/.test(location.pathname);
 
@@ -35,7 +36,7 @@ export default function AppLayout() {
   useEffect(() => { document.title = `${section.title} — Трекер подписок`; }, [section.title]);
   return (
     <div className="min-h-screen bg-[#f7f8f4] text-[#183d20] md:flex">
-      <aside className="flex flex-col bg-white px-4 py-5 shadow-sm md:sticky md:top-0 md:h-screen md:w-[230px] md:shrink-0 md:rounded-r-[20px]">
+      <aside className="flex min-w-0 flex-col bg-white px-4 py-5 shadow-sm md:sticky md:top-0 md:h-screen md:w-[230px] md:shrink-0 md:rounded-r-[20px]">
         <Link to="/dashboard" className="mb-6 flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-green-700 md:mb-12" aria-label="Трекер подписок — Дашборд">
           <img src={logo} alt="" className="h-11 w-11" /><span className="font-unbounded text-lg text-[#101b10]">Трекер<br />подписок</span>
         </Link>
@@ -47,13 +48,13 @@ export default function AppLayout() {
           ))}
         </nav>
         <div className="mt-5 flex items-center justify-between gap-2 md:mt-auto md:flex-col md:items-stretch">
-          <span className="truncate text-xs" title={user?.email}>{user?.email}</span>
+          <span className="min-w-0 truncate text-xs" title={user?.email}>{user?.email}</span>
           <LogoutButton />
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-5 py-6 sm:px-8">
-        <header className="mb-8 flex items-start justify-between gap-3">
-          <div><h1 className="font-unbounded text-2xl text-[#101010] sm:text-4xl">{section.title}</h1><p className="mt-2 text-sm text-[#687468]">{section.subtitle}</p></div>
+        <header className={`${isDashboard ? 'mb-2' : 'mb-8'} flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap`}>
+          <div className="min-w-0 flex-1 basis-[200px] sm:basis-auto"><h1 className={`font-unbounded break-words text-[#101010] [overflow-wrap:anywhere] ${isDashboard ? 'text-[clamp(1.75rem,4vw,3.5rem)] leading-tight tracking-tight' : 'text-xl sm:text-2xl lg:text-3xl xl:text-4xl'}`}>{section.title}</h1><p className="mt-1 text-sm text-[#687468]">{section.subtitle}</p></div>
           <div className="flex shrink-0 items-center gap-3">
             <span title="Уведомления появятся в следующем спринте" aria-label="Уведомления пока недоступны"><img src={notificationIcon} alt="" className="h-8 w-8 opacity-50" /></span>
             <Link to="/settings" aria-label="Аккаунт — настройки" className="rounded-full focus-visible:outline-2 focus-visible:outline-green-700"><img src={accountIcon} alt="" className="h-8 w-8" /></Link>

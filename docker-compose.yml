@@ -32,6 +32,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      VK_CLIENT_ID: ${VK_CLIENT_ID:-}
+      VK_REDIRECT_URI: ${VK_REDIRECT_URI:-}
       SPRING_PROFILES_ACTIVE: docker
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}

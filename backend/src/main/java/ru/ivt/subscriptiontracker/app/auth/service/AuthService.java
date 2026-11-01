@@ -1,5 +1,6 @@
 package ru.ivt.subscriptiontracker.app.auth.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 
 import java.util.Locale;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -55,6 +57,7 @@ public class AuthService {
                 .toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+            log.warn("Registration attempt with existing email");
             throw new UserAlreadyExistsException(
                     "User with this email already exists"
             );
@@ -70,6 +73,8 @@ public class AuthService {
         user.setStatus("PENDING");
 
         User savedUser = userRepository.save(user);
+
+        log.info("Registered new user with id={}", savedUser.getUserId());
 
         return new UserResponse(
                 savedUser.getUserId(),
@@ -87,9 +92,10 @@ public class AuthService {
                 .toLowerCase(Locale.ROOT);
 
         User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
-                .orElseThrow(() -> new InvalidCredentialsException(
-                        "Invalid email or password"
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Failed login attempt for non-existent email"); // Не пишем сам email
+                    return new InvalidCredentialsException("Invalid email or password");
+                });
 
 
         if (user.getPasswordHash() == null) {
@@ -100,6 +106,7 @@ public class AuthService {
                 request.password(),
                 user.getPasswordHash()
         )) {
+            log.warn("Failed login attempt for user id={}", user.getUserId());
             throw new InvalidCredentialsException(
                     "Invalid email or password"
             );
@@ -110,6 +117,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getTokenVersion()
         );
+        log.info("User id={} successfully logged in", user.getUserId());
 
         return new AuthResponse(token);
     }
@@ -179,5 +187,7 @@ public class AuthService {
         user.setTokenVersion(user.getTokenVersion() + 1);
 
         userRepository.save(user);
+
+        log.info("User id={} changed password and invalidated old tokens", user.getUserId());
     }
 }

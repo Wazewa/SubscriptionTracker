@@ -5,13 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+import ru.ivt.subscriptiontracker.app.TestContainersConfig;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,27 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
+@Import(TestContainersConfig.class)
 @ActiveProfiles("test")
 class AuthChangePasswordIntegrationTest {
 
     private static final String OLD_PASSWORD = "OldPassword123";
     private static final String NEW_PASSWORD = "NewPassword456";
-
-    @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18")
-            .withDatabaseName("subscriptions")
-            .withUsername("postgres")
-            .withPassword("postgres");
-
-    @DynamicPropertySource
-    static void props(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("jwt.secret",
-                () -> "test-secret-at-least-256-bits-long-for-hs384-signing-key-abc");
-    }
 
     @Autowired
     private Environment env;

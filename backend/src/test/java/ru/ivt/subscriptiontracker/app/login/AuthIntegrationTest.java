@@ -99,7 +99,7 @@ public class AuthIntegrationTest extends BaseApiTest {
 
             JsonNode header = objectMapper.readTree(headerJson);
 
-            assertEquals("HS384", header.get("alg").asText());
+            assertEquals("HS512", header.get("alg").asText());
 
             String payloadJson = new String(
                     Base64.getUrlDecoder().decode(parts[1]),

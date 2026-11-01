@@ -1,6 +1,7 @@
 package ru.ivt.subscriptiontracker.app.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleValidationException(
             MethodArgumentNotValidException exception
     ) {
+        log.warn("Validation failed {}", exception.getMessage());
         String message = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .findFirst()
-                .map(error -> error.getDefaultMessage())
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse("Validation failed");
 
         return buildError(HttpStatus.BAD_REQUEST, message);
@@ -40,6 +42,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidRegistration(
             InvalidRegistrationException exception
     ) {
+        log.warn("Registration invalid {}", exception.getMessage());
         return buildError(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage()
@@ -50,6 +53,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidPasswordChange(
             InvalidPasswordChangeException exception
     ) {
+        log.warn("Password invalid {}", exception.getMessage());
         return buildError(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage()
@@ -60,6 +64,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleUserAlreadyExists(
             UserAlreadyExistsException exception
     ) {
+        log.warn("User with this email already exists {}", exception.getMessage());
         return buildError(
                 HttpStatus.CONFLICT,
                 exception.getMessage()
@@ -70,6 +75,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleSubscriptionNotFoundException(
             SubscriptionNotFoundException exception
     ) {
+        log.warn("Subscription not found {}", exception.getMessage());
         String message = exception.getMessage() != null
                 ? exception.getMessage()
                 : "Subscription not found";
@@ -81,6 +87,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidCredentials(
             InvalidCredentialsException exception
     ) {
+        log.warn("Unauthorize {}", exception.getMessage());
         return buildError(
                 HttpStatus.UNAUTHORIZED,
                 exception.getMessage()
@@ -89,6 +96,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMessage());
         return buildError(HttpStatus.BAD_REQUEST, "Ошибка базы данных: проверьте переданные значения");
     }
 
@@ -96,6 +104,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleUserNotFound(
             UserNotFoundException exception
     ) {
+        log.warn("User not found: {}", exception.getMessage());
         return buildError(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage()
@@ -106,6 +115,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleCategoryNotFound(
             CategoryNotFoundException exception
     ) {
+        log.warn("Category not found: {}", exception.getMessage());
         return buildError(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage()

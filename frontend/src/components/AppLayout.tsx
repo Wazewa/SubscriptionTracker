@@ -10,13 +10,14 @@ import accountIcon from '../assets/icons/account.svg';
 import notificationIcon from '../assets/icons/notification1.svg';
 
 const sections = [
-  { to: '/dashboard', title: 'Дашборд', subtitle: 'Сводка по вашим подпискам', icon: dashboardIcon },
+  { to: '/dashboard', title: 'Дашборд', subtitle: 'Ваши подписки в одном месте', icon: dashboardIcon },
   { to: '/subscriptions', title: 'Подписки', subtitle: 'Управляйте своими подписками', icon: subscriptionsIcon },
   { to: '/settings', title: 'Настройки', subtitle: 'Управляйте своим аккаунтом', icon: settingsIcon },
 ];
 export default function AppLayout() {
   const { user } = useAuth();
   const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard';
   const isNewSubscription = location.pathname === '/subscriptions/new';
   const isEditSubscription = /^\/subscriptions\/[^/]+\/edit$/.test(location.pathname);
 
@@ -52,8 +53,8 @@ export default function AppLayout() {
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-5 py-6 sm:px-8">
-        <header className="mb-8 flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
-          <div className="min-w-0 flex-1 basis-[200px] sm:basis-auto"><h1 className="font-unbounded break-words text-xl text-[#101010] [overflow-wrap:anywhere] sm:text-2xl lg:text-3xl xl:text-4xl">{section.title}</h1><p className="mt-2 text-sm text-[#687468]">{section.subtitle}</p></div>
+        <header className={`${isDashboard ? 'mb-2' : 'mb-8'} flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap`}>
+          <div className="min-w-0 flex-1 basis-[200px] sm:basis-auto"><h1 className={`font-unbounded break-words text-[#101010] [overflow-wrap:anywhere] ${isDashboard ? 'text-[clamp(1.75rem,4vw,3.5rem)] leading-tight tracking-tight' : 'text-xl sm:text-2xl lg:text-3xl xl:text-4xl'}`}>{section.title}</h1><p className="mt-1 text-sm text-[#687468]">{section.subtitle}</p></div>
           <div className="flex shrink-0 items-center gap-3">
             <span title="Уведомления появятся в следующем спринте" aria-label="Уведомления пока недоступны"><img src={notificationIcon} alt="" className="h-8 w-8 opacity-50" /></span>
             <Link to="/settings" aria-label="Аккаунт — настройки" className="rounded-full focus-visible:outline-2 focus-visible:outline-green-700"><img src={accountIcon} alt="" className="h-8 w-8" /></Link>

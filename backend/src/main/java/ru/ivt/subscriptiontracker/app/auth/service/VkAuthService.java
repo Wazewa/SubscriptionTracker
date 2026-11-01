@@ -6,6 +6,7 @@ import ru.ivt.subscriptiontracker.app.auth.dto.AuthResponse;
 import ru.ivt.subscriptiontracker.app.auth.dto.VkAuthRequest;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.entity.UserIdentity;
+import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
 import ru.ivt.subscriptiontracker.app.user.repository.UserIdentityRepository;
 import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,10 @@ public class VkAuthService {
         String vkEmail = profile.email();
         if (vkEmail != null) {
             String normalized = vkEmail.trim().toLowerCase(Locale.ROOT);
-            if (!normalized.isEmpty() && !userRepository.existsByEmailIgnoreCase(normalized)) {
+            if (!normalized.isEmpty()) {
+                if (userRepository.existsByEmailIgnoreCase(normalized)) {
+                    throw new UserAlreadyExistsException("User with this email already exists");
+                }
                 return normalized;
             }
         }

@@ -44,7 +44,8 @@ public class VkAuthController {
                             schema = @Schema(implementation = ApiError.class))),
             @ApiResponse(responseCode = "401", description = "VK ID отклонил код авторизации",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ApiError.class)))
+                            schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "409", description = "Email из VK ID уже занят другим пользователем")
     })
     @SecurityRequirements
     @PostMapping("/vk")

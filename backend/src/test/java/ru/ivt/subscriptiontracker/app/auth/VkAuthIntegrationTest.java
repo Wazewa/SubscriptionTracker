@@ -42,8 +42,8 @@ class VkAuthIntegrationTest {
         registry.add("vk.redirect-uri", () -> "http://localhost");
         registry.add("vk.token-url", () -> VK.baseUrl() + "/oauth2/auth");
         registry.add("vk.user-info-url", () -> VK.baseUrl() + "/oauth2/user_info");
-        registry.add("jwt.secret", () -> "test-secret-key-test-secret-key-test-secret-key-1234");
         registry.add("jwt.access-ttl-seconds", () -> "3600");
+        registry.add("jwt.secret", () -> "test-secret-at-least-512-bits-long-for-hs512-signing-key-abcdefghijklmnop");
     }
 
     @Value("${local.server.port}")
@@ -121,16 +121,15 @@ class VkAuthIntegrationTest {
     }
 
     @Test
-    void takenEmailIsNotLinkedAndSyntheticEmailIsUsed() throws Exception {
+    void takenEmailReturns409AndCreatesNothing() throws Exception {
         insertPasswordUser("taken@mail.com");
         VK.userId = "42";
         VK.email = "taken@mail.com";
 
-        assertEquals(200, login().statusCode());
+        assertEquals(409, login().statusCode());
 
-        assertEquals(2, count("users"));
-        assertEquals("vk_42@vk.local", jdbc.queryForObject(
-                "select u.email from users u join user_identities i on i.user_id = u.user_id", String.class));
+        assertEquals(1, count("users"));
+        assertEquals(0, count("user_identities"));
     }
 
     @Test

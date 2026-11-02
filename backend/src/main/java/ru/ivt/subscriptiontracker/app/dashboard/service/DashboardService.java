@@ -219,15 +219,23 @@ public class DashboardService {
                     RoundingMode.HALF_UP
             );
 
-            case CUSTOM -> amount.multiply(DAYS_IN_MONTH)
-                    .divide(
-                            BigDecimal.valueOf(subscription.getPeriodDays()),
-                            2,
-                            RoundingMode.HALF_UP
-                    );
+            case CUSTOM -> {
+                Integer periodDays = subscription.getPeriodDays();
+
+                if (periodDays == null || periodDays <= 0) {
+                    log.warn("Invalid custom period for subscription id={}", subscription.getId());
+                    yield BigDecimal.ZERO;
+                }
+
+                yield amount.multiply(DAYS_IN_MONTH)
+                        .divide(
+                                BigDecimal.valueOf(periodDays),
+                                2,
+                                RoundingMode.HALF_UP
+                        );
+            }
         };
     }
-
 
     private int countChargesInMonth(
             SubscriptionEntity subscription,
@@ -237,26 +245,43 @@ public class DashboardService {
         LocalDate start = month.atDay(1);
         LocalDate end = month.atEndOfMonth();
 
+        if (subscription.getPeriod() == PeriodType.CUSTOM) {
+            Integer periodDays = subscription.getPeriodDays();
+
+            if (periodDays == null || periodDays <= 0) {
+                log.warn("Invalid custom period for subscription id={}", subscription.getId());
+                return 0;
+            }
+        }
+
+        long daysBetween = ChronoUnit.DAYS.between(anchor, start);
+
         long index = switch (subscription.getPeriod()) {
-            case WEEKLY -> ChronoUnit.WEEKS.between(anchor, start) - 1;
+            case WEEKLY -> Math.floorDiv(daysBetween, 7);
 
             case MONTHLY -> ChronoUnit.MONTHS.between(
                     YearMonth.from(anchor),
                     month
-            ) - 1;
+            );
 
-            case YEARLY -> ChronoUnit.YEARS.between(anchor, start) - 1;
+            case YEARLY -> ChronoUnit.YEARS.between(anchor, start);
 
             case CUSTOM -> Math.floorDiv(
-                    ChronoUnit.DAYS.between(anchor, start),
-                    subscription.getPeriodDays()
-            ) - 1;
+                    daysBetween,
+                    subscription.getPeriodDays().longValue()
+            );
         };
 
         LocalDate occurrence = occurrenceAt(subscription, index);
 
         while (occurrence.isBefore(start)) {
             index++;
+            occurrence = occurrenceAt(subscription, index);
+        }
+
+        while (occurrenceAt(subscription, index - 1).isAfter(start)
+                || occurrenceAt(subscription, index - 1).isEqual(start)) {
+            index--;
             occurrence = occurrenceAt(subscription, index);
         }
 
@@ -270,7 +295,6 @@ public class DashboardService {
 
         return count;
     }
-
 
     private LocalDate occurrenceAt(SubscriptionEntity subscription, long index) {
         LocalDate anchor = subscription.getNextPaymentDate();

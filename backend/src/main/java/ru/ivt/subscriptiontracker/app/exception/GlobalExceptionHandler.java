@@ -18,6 +18,7 @@ import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
 import ru.ivt.subscriptiontracker.app.category.exception.CategoryNotFoundException;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 
 @Slf4j
 @RestControllerAdvice
@@ -119,6 +120,18 @@ public class GlobalExceptionHandler {
         return buildError(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ApiError> handleDateTimeParse(
+            DateTimeParseException exception
+    ) {
+        log.warn("Invalid date or month format: {}", exception.getMessage());
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Некорректный формат месяца. Используйте YYYY-MM, например 2026-11"
         );
     }
 

@@ -97,6 +97,11 @@ public class AuthService {
                     return new InvalidCredentialsException("Invalid email or password");
                 });
 
+
+        if (user.getPasswordHash() == null) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+
         if (!passwordEncoder.matches(
                 request.password(),
                 user.getPasswordHash()
@@ -152,7 +157,12 @@ public class AuthService {
                 .orElseThrow(() -> new UserNotFoundException(
                         "User not found"
                 ));
-
+        if (user.getPasswordHash() == null) {
+            throw new InvalidPasswordChangeException(
+                    "Password is not set for this account"
+            );
+        }
+        
         if (!passwordEncoder.matches(
                 request.currentPassword(),
                 user.getPasswordHash()

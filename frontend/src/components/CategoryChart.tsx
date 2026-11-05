@@ -1,4 +1,3 @@
-
 import { useId, useState } from 'react';
 import { categorySegments } from '../dashboard/categoryChartModel';
 import {
@@ -9,7 +8,7 @@ import {
 
 type CategoryChartProps = {
   categories: CategoryTotal[];
-  onOpenDetails: () => void;
+  onOpenDetails?: () => void;
 };
 
 export default function CategoryChart({
@@ -58,9 +57,10 @@ export default function CategoryChart({
           Расходы по категориям
         </h2>
 
-        {segments.length > 0 && (
+        {segments.length > 0 && onOpenDetails && (
           <button
             type="button"
+            aria-haspopup="dialog"
             onClick={onOpenDetails}
             className="min-h-10 rounded-full px-4 py-2 text-sm font-semibold text-[#2e9b62] transition-colors hover:bg-[#eef4e9] hover:text-[#247e4e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
           >
@@ -101,7 +101,7 @@ export default function CategoryChart({
                       setHovered(segment.category.id);
                     }
                   }}
-                  onClick={() => toggle(segment.category.id)}
+                  onClick={() => { toggle(segment.category.id); onOpenDetails?.(); }}
                 />
               ))}
             </svg>
@@ -155,7 +155,7 @@ export default function CategoryChart({
                     setFocused(category.id);
                   }}
                   onBlur={() => setFocused(null)}
-                  onClick={() => toggle(category.id)}
+                  onClick={() => { toggle(category.id); onOpenDetails?.(); }}
                   className={`flex min-h-11 w-full flex-wrap items-center justify-between gap-2 rounded-xl px-2 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#195637] ${
                     active?.category.id === category.id
                       ? 'bg-[#eef4e9]'

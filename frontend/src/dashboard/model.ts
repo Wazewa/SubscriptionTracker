@@ -1,7 +1,7 @@
 // Internal frontend model, not an agreed backend API contract.
 // All monetary values are integer minor units (kopecks for RUB).
 export type CategoryTotal = { id: string; name: string; amountMinor: number };
-export type UpcomingPayment = { id: string; name: string; date: string; amountMinor: number };
+export type UpcomingPayment = { id: string; name: string; categoryName?: string; date: string; amountMinor: number };
 export type DashboardData = {
   month: string;
   currency: string;
@@ -38,7 +38,8 @@ export function validateDashboard(data: DashboardData): DashboardData {
   if (!Number.isSafeInteger(sum) || sum !== data.totalMinor) throw new Error('Сумма категорий не совпадает с общей суммой.');
   const paymentIds = new Set<string>();
   for (const payment of data.upcoming) {
-    if (!payment.id || paymentIds.has(payment.id) || !payment.name.trim() || !isDateKey(payment.date) || !money(payment.amountMinor)) {
+    if (!payment.id || paymentIds.has(payment.id) || !payment.name.trim() || !isDateKey(payment.date) || !money(payment.amountMinor)
+      || (payment.categoryName !== undefined && (typeof payment.categoryName !== 'string' || !payment.categoryName.trim()))) {
       throw new Error('Некорректные данные списаний.');
     }
     paymentIds.add(payment.id);
@@ -49,9 +50,15 @@ export function validateDashboard(data: DashboardData): DashboardData {
   return data;
 }
 
-export function nearestPayments(payments: UpcomingPayment[], today = localDateKey()): UpcomingPayment[] {
+export const UPCOMING_PAYMENTS_LIMIT = 4;
+
+export function futurePayments(payments: UpcomingPayment[], today = localDateKey()): UpcomingPayment[] {
   return payments.filter((item) => item.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)).slice(0, 5);
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+}
+
+export function nearestPayments(payments: UpcomingPayment[], today = localDateKey()): UpcomingPayment[] {
+  return futurePayments(payments, today).slice(0, UPCOMING_PAYMENTS_LIMIT);
 }
 
 export function categoryPercentages(categories: CategoryTotal[]): number[] {

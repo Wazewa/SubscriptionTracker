@@ -1,8 +1,9 @@
-
-import { useEffect } from 'react';
+import { useId } from 'react';
+import DashboardModal from './DashboardModal';
 import { Link } from 'react-router-dom';
 import {
   formatMoney,
+  futurePayments,
   formatPaymentDate,
   type UpcomingPayment,
 } from '../dashboard/model';
@@ -26,18 +27,8 @@ export default function UpcomingPaymentsModal({
   payments,
   onClose,
 }: UpcomingPaymentsModalProps) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const sortedPayments = [...payments].sort(
-    (a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id),
-  );
+  const titleId = useId();
+  const sortedPayments = futurePayments(payments);
 
   const totalMinor = sortedPayments.reduce(
     (sum, payment) => sum + payment.amountMinor,
@@ -60,22 +51,11 @@ export default function UpcomingPaymentsModal({
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="upcoming-modal-title"
-        className="flex max-h-[min(620px,90vh)] w-full max-w-[480px] flex-col overflow-hidden rounded-[24px] bg-white shadow-2xl"
-      >
+    <DashboardModal titleId={titleId} onClose={onClose}>
         <header className="shrink-0 px-6 pb-3 pt-5">
           <div className="flex items-start justify-between gap-3">
             <h2
-              id="upcoming-modal-title"
+              id={titleId} tabIndex={-1}
               className="font-unbounded text-[22px] font-bold leading-tight text-[#101b10]"
             >
               Все ближайшие списания
@@ -85,7 +65,7 @@ export default function UpcomingPaymentsModal({
               type="button"
               onClick={onClose}
               aria-label="Закрыть окно"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-3xl leading-none text-[#287b4b] transition-colors hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-[#195637]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-3xl leading-none text-[#287b4b] transition-colors hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-[#195637]"
             >
               ×
             </button>
@@ -118,14 +98,15 @@ export default function UpcomingPaymentsModal({
                         <div className="flex min-w-0 items-center gap-3">
                           <span
                             aria-hidden="true"
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e7f3e9] text-sm font-bold text-[#287b4b]"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e7f3e9] text-sm font-bold text-[#287b4b]"
                           >
                             {payment.name.trim().charAt(0).toUpperCase()}
                           </span>
 
-                          <p className="min-w-0 break-words text-sm font-semibold text-[#252b27]">
-                            {payment.name}
-                          </p>
+                          <div className="min-w-0 break-words [overflow-wrap:anywhere] text-sm font-semibold text-[#252b27]">
+                            <p>{payment.name}</p>
+                            <p className="text-xs font-normal text-[#89918a]">{payment.categoryName ?? 'Категория не указана'}</p>
+                          </div>
                         </div>
 
                         <div className="shrink-0 text-right">
@@ -161,7 +142,6 @@ export default function UpcomingPaymentsModal({
             Все подписки
           </Link>
         </footer>
-      </section>
-    </div>
+    </DashboardModal>
   );
 }

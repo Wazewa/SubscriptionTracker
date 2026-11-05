@@ -1,5 +1,5 @@
-
-import { useEffect, useMemo, useState } from 'react';
+import { useId, useState } from 'react';
+import DashboardModal from './DashboardModal';
 import { Link } from 'react-router-dom';
 import { categorySegments } from '../dashboard/categoryChartModel';
 import {
@@ -48,25 +48,9 @@ export default function CategoryDetailsModal({
 }: CategoryDetailsModalProps) {
   const [selectedMonth, setSelectedMonth] = useState(month);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const currentDate = new Date();
-  const currentMonth = [
-    currentDate.getFullYear(),
-    String(currentDate.getMonth() + 1).padStart(2, '0'),
-  ].join('-');
-
-  const availableMonths = useMemo(
-    () => getAvailableMonths(currentMonth),
-    [currentMonth],
-  );
+  const titleId = useId();
+  const periodId = useId();
+  const availableMonths = getAvailableMonths(month);
 
   const hasDataForSelectedMonth = selectedMonth === month;
 
@@ -83,22 +67,11 @@ export default function CategoryDetailsModal({
     : 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="category-modal-title"
-        className="flex max-h-[min(620px,90vh)] w-full max-w-[480px] flex-col overflow-hidden rounded-[24px] bg-white shadow-2xl"
-      >
+    <DashboardModal titleId={titleId} onClose={onClose}>
         <header className="shrink-0 px-6 pb-3 pt-5">
           <div className="flex items-start justify-between gap-3">
             <h2
-              id="category-modal-title"
+              id={titleId} tabIndex={-1}
               className="font-unbounded text-[22px] font-bold leading-tight text-[#101b10]"
             >
               Расходы по категориям
@@ -108,7 +81,7 @@ export default function CategoryDetailsModal({
               type="button"
               onClick={onClose}
               aria-label="Закрыть окно"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-3xl leading-none text-[#287b4b] transition-colors hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-[#195637]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-3xl leading-none text-[#287b4b] transition-colors hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-[#195637]"
             >
               ×
             </button>
@@ -122,7 +95,7 @@ export default function CategoryDetailsModal({
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
           <div className="relative mb-4 rounded-2xl border border-[#e8e9f1] px-3 py-2 shadow-[0_3px_10px_rgba(35,45,80,0.10)]">
             <label
-              htmlFor="category-period"
+              htmlFor={periodId}
               className="block text-sm font-semibold text-[#252b27]"
             >
               Период
@@ -130,10 +103,10 @@ export default function CategoryDetailsModal({
 
             <div className="relative">
               <select
-                id="category-period"
+                id={periodId}
                 value={selectedMonth}
                 onChange={(event) => setSelectedMonth(event.target.value)}
-                className="min-h-8 w-full cursor-pointer appearance-none border-0 bg-transparent pr-8 text-sm font-bold text-[#287b4b] outline-none focus:border-0 focus:outline-none focus:ring-0"
+                className="min-h-11 w-full cursor-pointer appearance-none border-0 bg-transparent pr-8 text-sm font-bold text-[#287b4b] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#195637]"
               >
                 {availableMonths.map((availableMonth) => (
                   <option key={availableMonth} value={availableMonth}>
@@ -190,7 +163,7 @@ export default function CategoryDetailsModal({
                   {segments.map(({ category, color }, index) => (
                     <div key={category.id}>
                       <div className="mb-1 flex items-center justify-between gap-3">
-                        <p className="min-w-0 break-words text-sm font-semibold text-[#252b27]">
+                        <p className="min-w-0 break-words [overflow-wrap:anywhere] text-sm font-semibold text-[#252b27]">
                           {category.name}
                         </p>
                         <p className="shrink-0 text-sm font-bold text-[#252b27]">
@@ -240,7 +213,6 @@ export default function CategoryDetailsModal({
             Все подписки
           </Link>
         </footer>
-      </section>
-    </div>
+    </DashboardModal>
   );
 }

@@ -8,10 +8,10 @@ test('empty dashboard and zero expenses are valid', () => {
   assert.deepEqual(categoryPercentages([]), []);
   assert.deepEqual(categoryPercentages([{ amountMinor: 0 }]), [0]);
 });
-test('nearest payments exclude past dates, include today, sort, limit to 5 without mutating input', () => {
+test('nearest payments exclude past dates, include today, sort, limit to 4 without mutating input', () => {
   const payments = [7, 3, 1, 5, 4, 2, 6].map((day) => ({ id: String(day), date: `2026-10-0${day}` }));
   const before = structuredClone(payments);
-  assert.deepEqual(nearestPayments(payments, '2026-10-02').map((item) => item.id), ['2', '3', '4', '5', '6']);
+  assert.deepEqual(nearestPayments(payments, '2026-10-02').map((item) => item.id), ['2', '3', '4', '5']);
   assert.deepEqual(payments, before);
   assert.deepEqual(nearestPayments(payments, '2026-11-01'), []);
 });
@@ -35,4 +35,22 @@ test('duplicate categories, impossible payment dates and inconsistent empty stat
   assert.throws(() => validateDashboard({ ...empty(), categories: [{ id: '1', name: 'Кино', amountMinor: 0 }, { id: '1', name: 'Кино', amountMinor: 0 }] }));
   assert.throws(() => validateDashboard({ ...empty(), subscriptionCount: 1, upcoming: [{ id: '1', name: 'Кино', date: '2026-02-30', amountMinor: 100 }] }));
   assert.throws(() => validateDashboard({ ...empty(), upcoming: [{ id: '1', name: 'Кино', date: '2026-10-05', amountMinor: 100 }] }));
+});
+
+test('upcoming payments retain supplied amounts, sort equal dates deterministically, and include fewer than four', () => {
+  const rows = [
+    { id: 'b', name: 'B', date: '2026-12-01', amountMinor: 0 },
+    { id: 'a', name: 'A', date: '2026-12-01', amountMinor: 12345 },
+    { id: 'c', name: 'C', date: '2026-11-30', amountMinor: 1 },
+  ];
+  assert.deepEqual(nearestPayments(rows, '2026-12-01').map(({ id, amountMinor }) => [id, amountMinor]), [['a', 12345], ['b', 0]]);
+});
+
+test('optional category names are validated without breaking existing payment models', () => {
+  const payment = { id: 'one', name: 'One', date: '2026-11-01', amountMinor: 100 };
+  const data = { ...empty(), subscriptionCount: 1, upcoming: [payment] };
+  assert.equal(validateDashboard(data).upcoming[0].name, 'One');
+  for (const categoryName of ['', '  ', 25, null]) {
+    assert.throws(() => validateDashboard({ ...data, upcoming: [{ ...payment, categoryName }] }));
+  }
 });

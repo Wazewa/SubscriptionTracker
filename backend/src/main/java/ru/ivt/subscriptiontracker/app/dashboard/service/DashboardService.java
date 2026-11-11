@@ -18,6 +18,7 @@ import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionStatus;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -244,6 +245,15 @@ public class DashboardService {
         LocalDate anchor = subscription.getNextPaymentDate();
         LocalDate start = month.atDay(1);
         LocalDate end = month.atEndOfMonth();
+
+        OffsetDateTime createdAt = subscription.getCreatedAt();
+        if (createdAt != null && createdAt.toLocalDate().isAfter(start)) {
+            start = createdAt.toLocalDate();
+        }
+
+        if (start.isAfter(end)) {
+            return 0;
+        }
 
         if (subscription.getPeriod() == PeriodType.CUSTOM) {
             Integer periodDays = subscription.getPeriodDays();

@@ -1,5 +1,6 @@
 package ru.ivt.subscriptiontracker.app.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return buildError(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class, IllegalArgumentException.class})
+    public ResponseEntity<ApiError> handleInvalidArgument(RuntimeException exception) {
+        log.warn("Invalid request argument: {}", exception.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidRegistrationException.class)

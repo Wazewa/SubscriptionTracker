@@ -4,6 +4,8 @@ package ru.ivt.subscriptiontracker.app.dashboard;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
 import ru.ivt.subscriptiontracker.app.category.repository.CategoryRepository;
@@ -98,6 +100,27 @@ class DashboardIntegrationTest extends BaseApiTest {
                 .get("/api/dashboard/summary")
                 .then()
                 .statusCode(401);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "upcoming, limit, 0",
+            "categories, threshold, 101",
+            "summary, month, 2026-13"
+    })
+    @DisplayName("Некорректные параметры Dashboard возвращают ApiError со статусом 400")
+    void rejectsInvalidDashboardParameter(String endpoint, String parameter, String value) {
+        given()
+                .header("Authorization", "Bearer " + createAuthorizedUser())
+                .queryParam(parameter, value)
+                .when()
+                .get("/api/dashboard/" + endpoint)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", is(400))
+                .body("timestamp", notNullValue())
+                .body("message", not(isEmptyOrNullString()));
     }
 
     @Test

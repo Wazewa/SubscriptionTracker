@@ -19,6 +19,7 @@ import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -80,6 +81,32 @@ class DashboardServiceTest {
                 .isEqualByComparingTo("433");
         assertThat(summary.actualCharges())
                 .isEqualByComparingTo("400.00");
+    }
+
+    @Test
+    @DisplayName("Counts daily charges starting on the subscription creation date")
+    void countsDailyChargesFromCreationDate() {
+        YearMonth month = YearMonth.of(2026, 11);
+        SubscriptionEntity subscription = createSubscription(
+                1L, "Daily", "Развлечения", new BigDecimal("10.00"),
+                Currency.RUB, PeriodType.CUSTOM, month.atDay(16)
+        );
+        subscription.setPeriodDays(1);
+        subscription.setCreatedAt(OffsetDateTime.parse("2026-11-15T12:00:00+04:00"));
+
+        when(currentUserService.getEmail()).thenReturn(EMAIL);
+        when(dashboardRepository.findAllByUser_EmailAndStatusOrderByNextPaymentDateAsc(
+                EMAIL, "ACTIVE"
+        )).thenReturn(List.of(subscription));
+
+        assertThat(dashboardService.getSummary(month).currencies().getFirst().actualCharges())
+                .isEqualByComparingTo("160.00");
+        assertThat(dashboardService.getCategoryExpenses(month, null).currencies().getFirst().totalAmount())
+                .isEqualByComparingTo("160.00");
+        assertThat(dashboardService.getSummary(month.minusMonths(1)).currencies().getFirst().actualCharges())
+                .isEqualByComparingTo("0.00");
+        assertThat(dashboardService.getCategoryExpenses(month.minusMonths(1), null).currencies())
+                .isEmpty();
     }
 
     @Test

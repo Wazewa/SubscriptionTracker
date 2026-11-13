@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
@@ -37,6 +38,13 @@ public class GlobalExceptionHandler {
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse("Validation failed");
 
+        return buildError(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        String message = "Invalid value for parameter '" + exception.getName() + "'";
+        log.warn("{}", message);
         return buildError(HttpStatus.BAD_REQUEST, message);
     }
 

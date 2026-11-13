@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import DashboardModal from './DashboardModal';
 import { Link } from 'react-router-dom';
 import { categorySegments } from '../dashboard/categoryChartModel';
@@ -10,6 +10,8 @@ import {
 
 type CategoryDetailsModalProps = {
   categories: CategoryTotal[];
+  currency?: string;
+  loadCategories?: (month: string, signal: AbortSignal) => Promise<CategoryTotal[]>;
   month: string;
   onClose: () => void;
 };
@@ -43,6 +45,8 @@ function getAvailableMonths(currentMonth: string) {
 
 export default function CategoryDetailsModal({
   categories,
+  currency = 'RUB',
+  loadCategories,
   month,
   onClose,
 }: CategoryDetailsModalProps) {
@@ -52,19 +56,23 @@ export default function CategoryDetailsModal({
   const periodId = useId();
   const availableMonths = getAvailableMonths(month);
 
-  const hasDataForSelectedMonth = selectedMonth === month;
-
-  const segments = hasDataForSelectedMonth
-    ? categorySegments(categories)
-    : [];
-
-  const percentages = categoryPercentages(
-    segments.map((segment) => segment.category),
-  );
-
-  const totalMinor = hasDataForSelectedMonth
-    ? categories.reduce((sum, category) => sum + category.amountMinor, 0)
-    : 0;
+  const [result, setResult] = useState<{ month: string; kind: 'loading' | 'error' | 'ready'; rows: CategoryTotal[] }>({ month, kind: 'ready', rows: categories });
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (selectedMonth === month || !loadCategories) return;
+    const controller = new AbortController();
+    setResult({ month: selectedMonth, kind: 'loading', rows: [] });
+    loadCategories(selectedMonth, controller.signal).then(rows => {
+      if (!controller.signal.aborted) setResult({ month: selectedMonth, kind: 'ready', rows });
+    }).catch(() => { if (!controller.signal.aborted) setResult({ month: selectedMonth, kind: 'error', rows: [] }); });
+    return () => controller.abort();
+  }, [selectedMonth, month, loadCategories, attempt]);
+  const current = selectedMonth === month ? { kind: 'ready', rows: categories }
+    : result.month === selectedMonth ? result : { kind: 'loading', rows: [] };
+  const hasDataForSelectedMonth = selectedMonth === month || (!!loadCategories && current.kind === 'ready');
+  const segments = hasDataForSelectedMonth ? categorySegments(current.rows) : [];
+  const percentages = categoryPercentages(segments.map(segment => segment.category));
+  const totalMinor = hasDataForSelectedMonth ? current.rows.reduce((sum, c) => sum + c.amountMinor, 0) : 0;
 
   return (
     <DashboardModal titleId={titleId} onClose={onClose}>
@@ -132,7 +140,9 @@ export default function CategoryDetailsModal({
             </div>
           </div>
 
-          {!hasDataForSelectedMonth ? (
+          {loadCategories && selectedMonth !== month && current.kind === 'loading' ? <p role="status" className="skeleton p-6">Загрузка категорий…</p>
+          : loadCategories && selectedMonth !== month && current.kind === 'error' ? <div role="alert" className="p-5 text-sm"><p>Не удалось загрузить категории.</p><button type="button" className="min-h-11 underline" onClick={() => setAttempt(v => v + 1)}>Повторить загрузку категорий</button></div>
+          : !hasDataForSelectedMonth ? (
             <div className="rounded-2xl bg-[#f5f7f2] p-6 text-center">
               <p className="text-sm font-semibold text-[#252b27]">
                 Данные за {formatMonth(selectedMonth).toLowerCase()} пока
@@ -150,7 +160,7 @@ export default function CategoryDetailsModal({
                   Всего за месяц
                 </p>
                 <p className="text-2xl font-bold leading-tight text-[#287b4b]">
-                  {formatMoney(totalMinor)}
+                  {formatMoney(totalMinor, currency)}
                 </p>
               </div>
 
@@ -167,7 +177,7 @@ export default function CategoryDetailsModal({
                           {category.name}
                         </p>
                         <p className="shrink-0 text-sm font-bold text-[#252b27]">
-                          {formatMoney(category.amountMinor)}
+                          {formatMoney(category.amountMinor, currency)}
                         </p>
                       </div>
 

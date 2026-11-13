@@ -8,7 +8,7 @@ export type UpcomingPaymentsState =
   | { kind: 'error' }
   | { kind: 'ready'; payments: UpcomingPayment[] };
 
-export function PaymentRows({ payments }: { payments: UpcomingPayment[] }) {
+export function PaymentRows({ payments, currency = 'RUB' }: { payments: UpcomingPayment[]; currency?: string }) {
   return <table className="w-full table-fixed text-sm">
     <caption className="sr-only">Подписки, суммы и даты предстоящих платежей</caption>
     <thead className="sr-only"><tr><th scope="col">Подписка и категория</th><th scope="col">Сумма и дата списания</th></tr></thead>
@@ -26,7 +26,7 @@ export function PaymentRows({ payments }: { payments: UpcomingPayment[] }) {
           </div>
         </td>
         <td className="w-[38%] py-3 text-right align-middle">
-          <p className="break-words font-semibold text-[#101b10] [overflow-wrap:anywhere]">{formatStatsMoney(payment.amountMinor)}</p>
+          <p className="break-words font-semibold text-[#101b10] [overflow-wrap:anywhere]">{formatStatsMoney(payment.amountMinor, currency)}</p>
           <time dateTime={payment.date} className="mt-0.5 block text-[11px] text-[#687468]">{formatPaymentDate(payment.date)}</time>
         </td>
       </tr>)}
@@ -34,11 +34,12 @@ export function PaymentRows({ payments }: { payments: UpcomingPayment[] }) {
   </table>;
 }
 
-export default function UpcomingPayments({ state, onRetry, onShowAll, today }: {
+export default function UpcomingPayments({ state, onRetry, onShowAll, today, currency = 'RUB' }: {
   state: UpcomingPaymentsState;
   onRetry: () => void;
   onShowAll?: () => void;
   today?: string;
+  currency?: string;
 }) {
   const titleId = useId();
   const rows = state.kind === 'ready' ? nearestPayments(state.payments, today) : [];
@@ -64,7 +65,7 @@ export default function UpcomingPayments({ state, onRetry, onShowAll, today }: {
       <p>Не удалось загрузить ближайшие списания.</p>
       <button type="button" onClick={onRetry} className="mt-3 min-h-11 rounded-lg px-2 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-green-700">Повторить загрузку списаний</button>
     </div>}
-    {state.kind === 'ready' && (rows.length > 0 ? <PaymentRows payments={rows} /> : <p role="status" className="py-6 text-sm text-[#687468]">Предстоящих списаний нет.</p>)}
+    {state.kind === 'ready' && (rows.length > 0 ? <PaymentRows payments={rows} currency={currency} /> : <p role="status" className="py-6 text-sm text-[#687468]">Предстоящих списаний нет.</p>)}
     {state.kind === 'ready' && rows.length > 0 && !onShowAll && <p className="mt-3 text-xs leading-relaxed text-[#687468]">Полный список списаний скоро будет доступен.</p>}
   </section>;
 }

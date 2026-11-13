@@ -43,8 +43,9 @@ test('negative, fractional and unsafe monetary aggregates are rejected for eithe
   }
 });
 
-test('other currencies are not silently converted to RUB', () => {
-  for (const currency of ['USD', 'EUR', 'CNY', 'rub', ['RUB'], null]) {
+test('supported currencies retain their units and unsupported currencies are rejected', () => {
+  for (const currency of ['USD', 'EUR', 'CNY']) assert.equal(validateDashboardStats({ ...stats(), currency }).currency, currency);
+  for (const currency of ['GBP', 'rub', ['RUB'], null]) {
     assert.throws(() => validateDashboardStats({ ...stats(), currency }), /Некорректные данные/);
   }
 });

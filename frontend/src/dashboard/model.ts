@@ -1,11 +1,11 @@
 // Internal frontend model, not an agreed backend API contract.
 // All monetary values are integer minor units (kopecks for RUB).
-export type CategoryTotal = { id: string; name: string; amountMinor: number };
+export type CategoryTotal = { id: string; name: string; amountMinor: number; other?: boolean };
 export type UpcomingPayment = { id: string; name: string; categoryName?: string; date: string; amountMinor: number };
 export type DashboardData = {
   month: string;
   currency: string;
-  subscriptionCount: number;
+  subscriptionCount?: number;
   totalMinor: number;
   categories: CategoryTotal[];
   upcoming: UpcomingPayment[];
@@ -23,8 +23,8 @@ export function isDateKey(value: string): boolean {
 
 export function validateDashboard(data: DashboardData): DashboardData {
   const money = (value: number) => Number.isSafeInteger(value) && value >= 0;
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(data.month) || data.currency !== 'RUB'
-    || !Number.isSafeInteger(data.subscriptionCount) || data.subscriptionCount < 0 || !money(data.totalMinor)) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(data.month) || !['RUB', 'USD', 'EUR', 'CNY'].includes(data.currency)
+    || (data.subscriptionCount !== undefined && (!Number.isSafeInteger(data.subscriptionCount) || data.subscriptionCount < 0)) || !money(data.totalMinor)) {
     throw new Error('Некорректные данные сводки.');
   }
   const categoryIds = new Set<string>();
@@ -73,8 +73,8 @@ export function categoryPercentages(categories: CategoryTotal[]): number[] {
   return rounded;
 }
 
-export function formatMoney(minor: number): string {
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 2 }).format(minor / 100);
+export function formatMoney(minor: number, currency = 'RUB'): string {
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency, maximumFractionDigits: 2 }).format(minor / 100);
 }
 
 export function formatPaymentDate(date: string): string {

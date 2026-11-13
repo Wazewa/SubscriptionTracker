@@ -2,7 +2,7 @@
 // Values are independent aggregates in integer kopecks, not fractional rubles.
 export type DashboardStats = {
   month: string;
-  currency: 'RUB';
+  currency: 'RUB' | 'USD' | 'EUR' | 'CNY';
   monthlyEquivalentMinor: number;
   scheduledChargesMinor: number;
 };
@@ -27,12 +27,12 @@ export function validateDashboardStats(value: unknown): DashboardStats {
   const data = value as Record<string, unknown>;
   const validMoney = (amount: unknown): amount is number =>
     typeof amount === 'number' && Number.isSafeInteger(amount) && amount >= 0;
-  if (!isStatsMonth(data.month) || data.currency !== 'RUB'
+  if (!isStatsMonth(data.month) || (typeof data.currency !== 'string' || !['RUB', 'USD', 'EUR', 'CNY'].includes(data.currency))
     || !validMoney(data.monthlyEquivalentMinor) || !validMoney(data.scheduledChargesMinor)) {
     throw new Error('Некорректные данные карточек статистики.');
   }
   return {
-    month: data.month, currency: data.currency,
+    month: data.month, currency: data.currency as DashboardStats['currency'],
     monthlyEquivalentMinor: data.monthlyEquivalentMinor,
     scheduledChargesMinor: data.scheduledChargesMinor,
   };
@@ -45,10 +45,10 @@ export function scheduledChargesTitle(month: string): string {
   return `Реально спишется в ${months[Number(month.slice(5)) - 1]}`;
 }
 
-export function formatStatsMoney(minor: number): string {
+export function formatStatsMoney(minor: number, currency = 'RUB'): string {
   if (!Number.isSafeInteger(minor) || minor < 0) throw new Error('Некорректная сумма статистики.');
   return new Intl.NumberFormat('ru-RU', {
-    style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 2,
+    style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 2,
   }).format(minor / 100);
 }
 

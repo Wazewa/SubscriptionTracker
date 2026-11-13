@@ -105,7 +105,9 @@ class DashboardIntegrationTest extends BaseApiTest {
     @ParameterizedTest
     @CsvSource({
             "upcoming, limit, 0",
+            "upcoming, limit, abc",
             "categories, threshold, 101",
+            "categories, threshold, abc",
             "summary, month, 2026-13"
     })
     @DisplayName("Некорректные параметры Dashboard возвращают ApiError со статусом 400")

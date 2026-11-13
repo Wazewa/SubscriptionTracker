@@ -14,12 +14,12 @@ export function createDemoDashboard(now = new Date()): DashboardData {
       { id: 'study', name: 'Учёба', amountMinor: 160000 },
     ],
     upcoming: [
-      { id: '6', name: 'Stepik', date: nextDate(10), amountMinor: 60100 },
-      { id: '1', name: 'Кинопоиск', date: nextDate(1), amountMinor: 29900 },
-      { id: '4', name: 'Spotify', date: nextDate(6), amountMinor: 56100 },
-      { id: '3', name: 'ChatGPT', date: nextDate(4), amountMinor: 99900 },
-      { id: '5', name: 'Иви', date: nextDate(8), amountMinor: 34100 },
-      { id: '2', name: 'Яндекс.Музыка', date: nextDate(2), amountMinor: 39900 },
+      { id: '6', name: 'Stepik', categoryName: 'Учёба', date: nextDate(10), amountMinor: 60100 },
+      { id: '1', name: 'Кинопоиск', categoryName: 'Кино', date: nextDate(1), amountMinor: 29900 },
+      { id: '4', name: 'Spotify', categoryName: 'Музыка', date: nextDate(6), amountMinor: 56100 },
+      { id: '3', name: 'ChatGPT', categoryName: 'Учёба', date: nextDate(4), amountMinor: 99900 },
+      { id: '5', name: 'Иви', categoryName: 'Кино', date: nextDate(8), amountMinor: 34100 },
+      { id: '2', name: 'Яндекс.Музыка', categoryName: 'Музыка', date: nextDate(2), amountMinor: 39900 },
     ],
   };
 }

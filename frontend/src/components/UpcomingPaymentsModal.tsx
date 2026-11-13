@@ -10,6 +10,7 @@ import {
 
 type UpcomingPaymentsModalProps = {
   payments: UpcomingPayment[];
+  currency?: string;
   onClose: () => void;
 };
 
@@ -25,6 +26,7 @@ function formatMonth(date: string) {
 
 export default function UpcomingPaymentsModal({
   payments,
+  currency = 'RUB',
   onClose,
 }: UpcomingPaymentsModalProps) {
   const titleId = useId();
@@ -111,7 +113,7 @@ export default function UpcomingPaymentsModal({
 
                         <div className="shrink-0 text-right">
                           <p className="text-sm font-bold text-[#252b27]">
-                            {formatMoney(payment.amountMinor)}
+                            {formatMoney(payment.amountMinor, currency)}
                           </p>
                           <time
                             dateTime={payment.date}
@@ -131,7 +133,7 @@ export default function UpcomingPaymentsModal({
 
         <footer className="shrink-0 border-t border-[#edf0e8] bg-white px-6 pb-5 pt-3">
           <p className="mb-3 text-sm font-bold text-[#252b27]">
-            Итого предстоящих платежей: {formatMoney(totalMinor)}
+            Итого предстоящих платежей: {formatMoney(totalMinor, currency)}
           </p>
 
           <Link

@@ -36,7 +36,7 @@ export default function DashboardStatsCards({ state, onRetry }: {
             {state.kind === 'loading'
               ? <div aria-hidden="true" className={`skeleton mb-2 mt-1 h-12 w-3/4 max-w-60 ${card.primary ? '!bg-white/25' : ''}`} />
               : <p className="font-unbounded mb-1 mt-1 break-words text-[clamp(1.75rem,3.5vw,3rem)] leading-[1.15] tracking-tight [overflow-wrap:anywhere]">
-                {card.amount === undefined ? <><span aria-hidden="true">—</span><span className="sr-only">Данные недоступны</span></> : formatStatsMoney(card.amount)}
+                {card.amount === undefined ? <><span aria-hidden="true">—</span><span className="sr-only">Данные недоступны</span></> : formatStatsMoney(card.amount, state.kind === 'ready' ? state.data.currency : 'RUB')}
               </p>}
             <p id={`${card.id}-description`} className="sr-only">{card.description}</p>
             <p className={`text-[11px] leading-snug ${card.primary ? 'text-[#d5eadc]' : 'text-[#45643b]'}`}>в сравнении с прошлым месяцем</p>

@@ -8,11 +8,13 @@ import {
 
 type CategoryChartProps = {
   categories: CategoryTotal[];
+  currency?: string;
   onOpenDetails?: () => void;
 };
 
 export default function CategoryChart({
   categories,
+  currency = 'RUB',
   onOpenDetails,
 }: CategoryChartProps) {
   const titleId = useId();
@@ -119,7 +121,7 @@ export default function CategoryChart({
                     {active.category.name}
                   </p>
                   <p className="mt-1 max-w-full break-words text-[#101b10]">
-                    {formatMoney(active.category.amountMinor)} ·{' '}
+                    {formatMoney(active.category.amountMinor, currency)} ·{' '}
                     {percentages[activeIndex]}%
                   </p>
                 </>
@@ -174,7 +176,7 @@ export default function CategoryChart({
                   </span>
 
                   <span>
-                    {formatMoney(category.amountMinor)} · {percentages[index]}%
+                    {formatMoney(category.amountMinor, currency)} · {percentages[index]}%
                   </span>
                 </button>
               </li>

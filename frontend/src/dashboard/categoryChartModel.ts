@@ -21,6 +21,6 @@ export function categorySegments(categories: CategoryTotal[]) {
     const start = cumulative;
     cumulative += category.amountMinor / total * 360;
     const end = index === visible.length - 1 ? 360 : cumulative;
-    return { category, start, end, color: categoryColors[index % categoryColors.length], path: donutPath(start, end) };
+    return { category, start, end, color: category.other ? '#747c79' : categoryColors[index % categoryColors.length], path: donutPath(start, end) };
   });
 }

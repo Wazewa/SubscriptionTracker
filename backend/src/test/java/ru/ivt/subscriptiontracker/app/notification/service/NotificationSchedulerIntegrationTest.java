@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("Интеграционный тест планировщика уведомлений")
 class NotificationSchedulerIntegrationTest extends BaseApiTest {
@@ -50,8 +51,8 @@ class NotificationSchedulerIntegrationTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Создает уведомление для подписки со скорым списанием")
-    void createsNotificationForUpcomingPayment() {
+    @DisplayName("При ошибке Telegram статус становится FAILED")
+    void setsFailedStatusOnTelegramError() {
         SubscriptionEntity sub = new SubscriptionEntity();
         sub.setUser(testUser);
         sub.setCategory(testCategory);
@@ -67,8 +68,8 @@ class NotificationSchedulerIntegrationTest extends BaseApiTest {
 
         var notifications = notificationRepository.findAll();
         assertEquals(1, notifications.size());
-        assertEquals(testUser.getUserId(), notifications.get(0).getUserId());
         assertEquals("FAILED", notifications.get(0).getStatus());
+        assertNotNull(notifications.get(0).getErrorMessage());
     }
 
     @Test

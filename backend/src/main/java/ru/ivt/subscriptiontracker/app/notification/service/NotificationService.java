@@ -3,6 +3,7 @@ package ru.ivt.subscriptiontracker.app.notification.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ivt.subscriptiontracker.app.notification.dto.NotificationResponse;
 import ru.ivt.subscriptiontracker.app.notification.entity.NotificationEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 public class NotificationService {
 
     private static final String TYPE_PAYMENT_REMINDER = "PAYMENT_REMINDER";
+    private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_SENT = "SENT";
     private static final String STATUS_FAILED = "FAILED";
 
@@ -30,7 +32,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public List<NotificationResponse> myNotifications() {
-        User user = currentUser();
+        User user = getCurrentUser();
         return notificationRepository
                 .findAllByUserIdOrderByCreatedAtDesc(user.getUserId())
                 .stream()
@@ -38,45 +40,49 @@ public class NotificationService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public void sendToTelegram(String message) {
-        User user = currentUser();
+        User user = getCurrentUser();
         telegramClient.send(user.getTelegramChatId(), message);
     }
 
     @Transactional
     public void updateTelegramChatId(String chatId) {
-        User user = currentUser();
+        User user = getCurrentUser();
         user.setTelegramChatId(chatId);
         userRepository.save(user);
         log.info("Telegram chatId обновлён для user={}", user.getEmail());
     }
 
     @Transactional
-    public NotificationEntity createAndSend(User user, Long subscriptionId, String message) {
-        OffsetDateTime now = OffsetDateTime.now();
-        boolean sent = telegramClient.send(user.getTelegramChatId(), message);
-
+    public NotificationEntity createPendingNotification(User user, Long subscriptionId, String message) {
         NotificationEntity n = new NotificationEntity();
         n.setUserId(user.getUserId());
         n.setSubscriptionId(subscriptionId);
         n.setMessage(message);
         n.setType(TYPE_PAYMENT_REMINDER);
-        n.setScheduledAt(now);
-        n.setSentToTelegram(sent);
-        n.setStatus(sent ? STATUS_SENT : STATUS_FAILED);
-        if (sent) {
-            n.setSentAt(now);
-        } else {
-            n.setErrorMessage("Telegram delivery failed or not configured");
-        }
+        n.setScheduledAt(OffsetDateTime.now());
+        n.setStatus(STATUS_PENDING);
+        n.setSentToTelegram(false);
         return notificationRepository.save(n);
     }
 
-    private User currentUser() {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateNotificationStatus(Long notificationId, boolean sent) {
+        notificationRepository.findById(notificationId).ifPresent(n -> {
+            n.setStatus(sent ? STATUS_SENT : STATUS_FAILED);
+            n.setSentToTelegram(sent);
+            if (sent) {
+                n.setSentAt(OffsetDateTime.now());
+            } else {
+                n.setErrorMessage("Telegram delivery failed");
+            }
+            notificationRepository.save(n);
+        });
+    }
+
+    private User getCurrentUser() {
         String email = currentUserService.getEmail();
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Authenticated user not found: " + email));
+                .orElseThrow(() -> new IllegalStateException("User not found: " + email));
     }
 }

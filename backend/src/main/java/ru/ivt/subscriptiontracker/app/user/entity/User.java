@@ -41,6 +41,9 @@ public class User {
     @Column(name = "password_hash", length = 128)
     private String passwordHash;
 
+    @Column(name = "telegram_chat_id", length = 64)
+    private String telegramChatId;
+
     @Column(name = "registered_at", nullable = false)
     private Instant registeredAt;
 

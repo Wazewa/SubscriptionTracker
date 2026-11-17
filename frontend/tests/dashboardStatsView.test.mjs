@@ -4,6 +4,8 @@ import { createElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
+import { aggregateAmountBreakdown } from '../src/dashboard/amountBreakdownModel.ts';
+import { parseSubscriptions } from '../src/subscriptions/model.ts';
 
 // Compile the existing TSX through the installed Vite; no listening HTTP server,
 // backend, credentials, extra package, or browser session is needed for these tests.
@@ -17,13 +19,65 @@ const compiler = await createServer({
 after(() => compiler.close());
 const { default: DashboardStatsCards } = await compiler.ssrLoadModule('/src/components/DashboardStatsCards.tsx');
 const { default: CategoryChart } = await compiler.ssrLoadModule('/src/components/CategoryChart.tsx');
+const { default: DashboardAmountBreakdown } = await compiler.ssrLoadModule('/src/components/DashboardAmountBreakdown.tsx');
 const { default: UpcomingPayments } = await compiler.ssrLoadModule('/src/components/UpcomingPayments.tsx');
 const { default: UpcomingPaymentsModal } = await compiler.ssrLoadModule('/src/components/UpcomingPaymentsModal.tsx');
 const { default: CategoryDetailsModal } = await compiler.ssrLoadModule('/src/components/CategoryDetailsModal.tsx');
+const { demoBreakdownSubscriptions } = await compiler.ssrLoadModule('/src/dashboard/demo.ts');
+const { createDemoDashboardStats } = await compiler.ssrLoadModule('/src/dashboard/statsDemo.ts');
 const render = (state) => renderToStaticMarkup(createElement(DashboardStatsCards, { state, onRetry() {} }));
 const ready = (patch = {}) => ({ kind: 'ready', data: {
   month: '2026-11', currency: 'RUB', monthlyEquivalentMinor: 320000, scheduledChargesMinor: 376000, ...patch,
 } });
+
+test('breakdown keeps its heading but hides mock values and colored segments during loading, error and empty states', () => {
+  for (const state of [{ kind: 'loading' }, { kind: 'error' }, { kind: 'ready', data: aggregateAmountBreakdown([], 'RUB', 0) }]) {
+    const html = renderToStaticMarkup(createElement(DashboardAmountBreakdown, { state, onRetry() {} }));
+    assert.match(html, /Из чего складывается сумма — по периодичности/);
+    assert.doesNotMatch(html, /₽|\d+%|5 подписок|2 подписки|1 подписка|background-color|Временные данные/);
+    if (state.kind === 'loading') {
+      assert.match(html, /aria-busy="true"/);
+      assert.match(html, /class="skeleton/);
+      assert.match(html, /role="status"/);
+      assert.doesNotMatch(html, /<button/);
+    } else if (state.kind === 'error') {
+      assert.match(html, /role="alert"/);
+      assert.match(html, /Повторить загрузку/);
+      assert.doesNotMatch(html, /class="skeleton/);
+    } else {
+      assert.match(html, /Нет данных для разбивки/);
+      assert.doesNotMatch(html, /<button|class="skeleton/);
+    }
+  }
+});
+
+test('breakdown success renders five real monthly contributions without mock notice', () => {
+  const subscriptions = parseSubscriptions([{ id: 1, name: 'Месячная', amount: 3280, currency: 'RUB', period: 'MONTHLY', periodDays: null, categoryId: 1, status: 'ACTIVE', nextPaymentDate: '2099-01-01' }]);
+  const html = renderToStaticMarkup(createElement(DashboardAmountBreakdown, { state: { kind: 'ready', data: aggregateAmountBreakdown(subscriptions, 'RUB', 328000) }, onRetry() {} }));
+  assert.doesNotMatch(html, /Временные данные|TODO/);
+  assert.match(html, /3\s280\s₽/);
+  assert.match(html, /100%/);
+  assert.match(html, /1 подписка/);
+  assert.match(html, /Другие/);
+  assert.equal((html.match(/<h3/g) || []).length, 5);
+  assert.doesNotMatch(html, /class="skeleton|role="alert"/);
+});
+
+test('DEV breakdown fixtures reconcile with the actual demo upper card', () => {
+  const stats = createDemoDashboardStats();
+  const data = aggregateAmountBreakdown(parseSubscriptions(demoBreakdownSubscriptions), stats.currency, stats.monthlyEquivalentMinor);
+  assert.equal(data.groups.reduce((sum, item) => sum + item.amountMinor, 0), stats.monthlyEquivalentMinor);
+  assert.ok(data.groups.every(item => item.count > 0));
+});
+
+test('category loading keeps the visible green heading and skeletons only the chart and legend', () => {
+  const html = renderToStaticMarkup(createElement(CategoryChart, { categories: [], kind: 'loading', onOpenDetails() {} }));
+  assert.match(html, /<h2[^>]*class="[^"]*text-\[#285d25\][^"]*">Расходы по категориям<\/h2>/);
+  assert.ok(html.indexOf('<h2') < html.indexOf('aria-hidden="true"'));
+  assert.match(html, /aria-busy="true"/);
+  assert.equal((html.match(/class="skeleton/g) || []).length, 3);
+  assert.doesNotMatch(html, /₽|<svg/);
+});
 
 test('cards render two different aggregates and use the supplied calendar month', () => {
   const html = render(ready());
@@ -80,7 +134,7 @@ test('chart exposes category controls and exact monetary alternatives to pointer
     { id: 'film', name: 'Кино', amountMinor: 12345 }, { id: 'zero', name: 'Ноль', amountMinor: 0 },
   ] }));
   assert.equal((html.match(/<path /g) || []).length, 1);
-  assert.equal((html.match(/<button /g) || []).length, 1);
+  assert.equal((html.match(/<button /g) || []).length, 2);
   assert.match(html, /aria-controls=/);
   assert.match(html, /aria-pressed="false"/);
   assert.match(html, /role="status"/);
@@ -89,10 +143,12 @@ test('chart exposes category controls and exact monetary alternatives to pointer
   assert.doesNotMatch(html, /Ноль|NaN|Infinity/);
 });
 
-test('empty chart communicates no expenses without fake slices or interactive controls', () => {
+test('empty chart communicates no expenses and retains the disabled details action without fake slices', () => {
   const html = renderToStaticMarkup(createElement(CategoryChart, { categories: [] }));
   assert.match(html, /За этот месяц нет расходов/);
-  assert.doesNotMatch(html, /<svg|<path|<button/);
+  assert.match(html, /Подробнее/);
+  assert.match(html, /disabled/);
+  assert.doesNotMatch(html, /<svg|<path/);
 });
 
 const paymentItems = [7, 3, 1, 5, 4, 2, 6].map((day) => ({
@@ -101,6 +157,38 @@ const paymentItems = [7, 3, 1, 5, 4, 2, 6].map((day) => ({
 const renderPayments = (state, props = {}) => renderToStaticMarkup(createElement(UpcomingPayments, {
   state, today: '2026-11-02', onRetry() {}, ...props,
 }));
+
+test('both block headers and action styles remain identical across loading, error, empty and success', () => {
+  const headers = { chart: [], payments: [] };
+  for (const kind of ['loading', 'error', 'empty', 'no-subscriptions', 'ready']) {
+    const chart = renderToStaticMarkup(createElement(CategoryChart, {
+      kind: kind === 'loading' || kind === 'error' ? kind : 'ready',
+      categories: kind === 'ready' ? [{ id: 'a', name: 'Кино', amountMinor: 10000 }] : [],
+      noSubscriptions: kind === 'no-subscriptions', onOpenDetails() {}, onRetry() {},
+    }));
+    const payments = renderPayments(kind === 'loading' || kind === 'error' ? { kind }
+      : { kind: 'ready', payments: kind === 'ready' ? paymentItems : [] }, { onShowAll() {} });
+    for (const [name, html, title, action] of [
+      ['chart', chart, 'Расходы по категориям', 'Подробнее'],
+      ['payments', payments, 'Ближайшие списания', 'Все'],
+    ]) {
+      assert.match(html, new RegExp(title));
+      const button = html.match(new RegExp(`<button[^>]*class="([^"]*)"[^>]*>${action}</button>`));
+      assert.ok(button);
+      headers[name].push(button[1]);
+      assert.match(html, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
+      if (kind !== 'ready') assert.doesNotMatch(html, /₽|<table|<svg/);
+      if (kind === 'error') assert.match(html, /role="alert"/);
+    }
+    if (kind === 'error') {
+      const retryClass = html => html.match(/<button[^>]*class="([^"]*)">Повторить загрузку<\/button>/)?.[1];
+      assert.ok(retryClass(chart));
+      assert.equal(retryClass(chart), retryClass(payments));
+    }
+    if (kind === 'no-subscriptions') assert.match(chart, /У вас пока нет подписок/);
+  }
+  assert.equal(new Set([...headers.chart, ...headers.payments]).size, 1);
+});
 
 test('upcoming block renders four chronological payments with category, amount, date and local icon fallback', () => {
   const html = renderPayments({ kind: 'ready', payments: paymentItems });
@@ -144,7 +232,7 @@ test('unavailable API and error states never fabricate zero amounts or expose se
   assert.doesNotMatch(unavailable, /₽|<time|Повторить загрузку списаний/);
   const error = renderPayments({ kind: 'error', message: 'private-server-detail' });
   assert.match(error, /role="alert"/);
-  assert.match(error, /Повторить загрузку списаний/);
+  assert.match(error, /Повторить загрузку/);
   assert.doesNotMatch(error, /private-server-detail|₽|<time/);
 });
 

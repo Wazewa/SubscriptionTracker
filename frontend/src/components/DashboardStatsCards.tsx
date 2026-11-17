@@ -51,9 +51,9 @@ export default function DashboardStatsCards({ state, onRetry }: {
       {state.kind === 'unavailable' && <p role="status" className="mt-3 rounded-xl border border-[#cbdcc7] bg-[#eef4e9] p-4 text-sm text-[#285d25]">
         API статистики ещё не подключён. Суммы появятся после интеграции с backend — прочерки не означают нулевые расходы.
       </p>}
-      {state.kind === 'error' && <div role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+      {state.kind === 'error' && <div role="alert" className="mt-3 flex flex-wrap items-center gap-x-3 text-sm text-[#687468]">
         <p>Не удалось загрузить суммы по подпискам. Проверьте соединение и повторите загрузку.</p>
-        <button type="button" onClick={onRetry} className="mt-2 min-h-11 rounded-lg px-2 py-2 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700">Повторить загрузку сумм</button>
+        <button type="button" onClick={onRetry} className="min-h-11 rounded-lg px-2 py-2 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700">Повторить загрузку сумм</button>
       </div>}
     </section>
   );

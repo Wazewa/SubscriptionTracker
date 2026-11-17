@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import DashboardBlockHeader, { dashboardRetryClass } from './DashboardBlockHeader';
+import DashboardSkeleton from './DashboardSkeleton';
 import { categorySegments } from '../dashboard/categoryChartModel';
 import {
   categoryPercentages,
@@ -10,12 +12,20 @@ type CategoryChartProps = {
   categories: CategoryTotal[];
   currency?: string;
   onOpenDetails?: () => void;
+  kind?: 'loading' | 'error' | 'ready';
+  onRetry?: () => void;
+  errorMessage?: string;
+  noSubscriptions?: boolean;
 };
 
 export default function CategoryChart({
   categories,
   currency = 'RUB',
   onOpenDetails,
+  kind = 'ready',
+  onRetry,
+  errorMessage,
+  noSubscriptions = false,
 }: CategoryChartProps) {
   const titleId = useId();
   const detailId = useId();
@@ -24,7 +34,7 @@ export default function CategoryChart({
   const [focused, setFocused] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const segments = categorySegments(categories);
+  const segments = categorySegments(kind === 'ready' && !noSubscriptions ? categories : []);
   const percentages = categoryPercentages(
     segments.map((segment) => segment.category),
   );
@@ -43,6 +53,7 @@ export default function CategoryChart({
     <section
       className="min-w-0 rounded-3xl border border-[#e1e5dc] bg-white p-6 sm:p-7"
       aria-labelledby={titleId}
+      aria-busy={kind === 'loading'}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           setHovered(null);
@@ -51,29 +62,17 @@ export default function CategoryChart({
         }
       }}
     >
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2
-          id={titleId}
-          className="font-unbounded text-lg text-[#101b10]"
-        >
-          Расходы по категориям
-        </h2>
+      <DashboardBlockHeader titleId={titleId} title="Расходы по категориям" action="Подробнее"
+        onAction={onOpenDetails} disabled={!onOpenDetails || kind !== 'ready' || segments.length === 0} />
 
-        {segments.length > 0 && onOpenDetails && (
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            onClick={onOpenDetails}
-            className="min-h-10 rounded-full px-4 py-2 text-sm font-semibold text-[#2e9b62] transition-colors hover:bg-[#eef4e9] hover:text-[#247e4e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
-          >
-            Подробнее
-          </button>
-        )}
-      </div>
-
-      {segments.length === 0 ? (
-        <p className="mt-8 text-sm text-[#687468]">
-          За этот месяц нет расходов для диаграммы.
+      {kind === 'loading' ? <DashboardSkeleton /> : kind === 'error' ? (
+        <div role="alert" className="py-6 text-sm text-[#687468]">
+          <p>{errorMessage || 'Не удалось загрузить сводку.'}</p>
+          <button type="button" onClick={onRetry} className={dashboardRetryClass}>Повторить загрузку</button>
+        </div>
+      ) : segments.length === 0 ? (
+        <p role="status" className="py-6 text-sm text-[#687468]">
+          {noSubscriptions ? 'У вас пока нет подписок' : 'За этот месяц нет расходов для диаграммы.'}
         </p>
       ) : (
         <>

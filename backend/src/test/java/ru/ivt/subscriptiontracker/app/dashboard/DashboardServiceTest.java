@@ -1,5 +1,5 @@
 
-package ru.ivt.subscriptiontracker.app.dashboard.service;
+package ru.ivt.subscriptiontracker.app.dashboard;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +12,7 @@ import ru.ivt.subscriptiontracker.app.dashboard.dto.DashboardSummaryResponse;
 import ru.ivt.subscriptiontracker.app.dashboard.dto.DashboardUpcomingResponse;
 import ru.ivt.subscriptiontracker.app.dashboard.mapper.DashboardMapper;
 import ru.ivt.subscriptiontracker.app.dashboard.repository.DashboardRepository;
+import ru.ivt.subscriptiontracker.app.dashboard.service.DashboardService;
 import ru.ivt.subscriptiontracker.app.security.CurrentUserService;
 import ru.ivt.subscriptiontracker.app.subscription.entity.Currency;
 import ru.ivt.subscriptiontracker.app.subscription.entity.PeriodType;

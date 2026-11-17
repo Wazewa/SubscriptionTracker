@@ -25,7 +25,7 @@ cd tp_ivt_team9_2026
 
 ### Настройка синхронизации с GitHub
 
-Необходимо, чтобы `git push` отправлял изменения одновременно и в Сфера.Код, и в GitHub, выполните эти команды **один раз** после клонирования:
+Необходимо, чтобы `git push` отправлял изменения одновременно и в "Сфера.Код", и в GitHub, выполните эти команды **один раз** после клонирования:
 
 ```sh
 # 1. Добавляем адрес Сферы как первый и GitHub как второй push-URL (не меняя основной origin)
@@ -176,6 +176,57 @@ mvn test -Dtest=AuthIntegrationTest
 mvn test -Dtest=HealthApiTest
 ```
 
+## CI
+
+Для автоматической проверки изменений используются **GitHub Actions**: `Backend CI` и `Frontend CI`.
+
+### Запуск
+
+Оба пайплайна запускаются при:
+- `push` в ветку `master`;
+- создании или обновлении Pull Request.
+
+### Backend CI
+
+Выполняет проверки серверной части проекта.
+
+1. **Checkout** — получение исходного кода.
+2. **Setup JDK 25** — настройка Java 25 (Temurin) и кэша Maven.
+3. **Docker permissions** — настройка доступа к Docker для Testcontainers.
+4. **Build and Run Tests** — выполнение `mvn clean verify` в каталоге `backend`.
+5. **Test Docker Build** — проверка сборки backend-образа командой `docker build`.
+
+### Frontend CI
+
+Выполняет проверки клиентской части проекта.
+
+1. **Checkout** — получение исходного кода.
+2. **Setup Node.js 22** — настройка Node.js и кэша npm.
+3. **Install dependencies** — установка зависимостей командой `npm ci`.
+4. **Run tests** — запуск тестов командой `npm test`.
+5. **TypeScript check** — проверка типов командой `npm run typecheck`.
+6. **Build frontend** — production-сборка командой `npm run build`.
+
+### Линтеры и сканеры безопасности
+
+Отдельные линтеры и сканеры безопасности в текущих пайплайнах не настроены.
+
+### Просмотр ошибок
+
+Результаты доступны в GitHub: **Actions → нужный workflow → нужный запуск**.
+
+При ошибке откройте завершившийся с ошибкой шаг и изучите его логи.
+
+Типичные ошибки:
+
+- **Backend CI:**
+    - `mvn clean verify` — ошибки компиляции, тестов или Maven;
+    - `Testcontainers` — проблемы запуска тестовой БД или доступа к Docker;
+    - `Test Docker Build` — ошибки сборки Docker-образа.
+
+- **Frontend CI:**
+    - `npm
+
 ## Правила работы
 
 См. [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -209,6 +260,5 @@ mvn test -Dtest=HealthApiTest
 
 ## Что появится в ближайшее время
 
-- Дашборд с аналитикой
-- ML-сервис и бот
+- ML-сервис
 - Полноценные уведомления (email/push)

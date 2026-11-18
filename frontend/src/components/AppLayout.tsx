@@ -57,7 +57,7 @@ export default function AppLayout() {
           <div className="min-w-0 flex-1 basis-[200px] sm:basis-auto"><h1 className={`font-unbounded break-words text-[#101010] [overflow-wrap:anywhere] ${isDashboard ? 'text-[clamp(1.75rem,4vw,3.5rem)] leading-tight tracking-tight' : 'text-xl sm:text-2xl lg:text-3xl xl:text-4xl'}`}>{section.title}</h1><p className="mt-1 text-sm text-[#687468]">{section.subtitle}</p></div>
           <div className="flex shrink-0 items-center gap-3">
             <span title="Уведомления появятся в следующем спринте" aria-label="Уведомления пока недоступны"><img src={notificationIcon} alt="" className="h-8 w-8 opacity-50" /></span>
-            <Link to="/settings" aria-label="Аккаунт — настройки" className="rounded-full focus-visible:outline-2 focus-visible:outline-green-700"><img src={accountIcon} alt="" className="h-8 w-8" /></Link>
+            <NavLink to="/settings" end aria-label="Аккаунт — настройки" title="Открыть настройки аккаунта" className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[#eef4e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"><img src={accountIcon} alt="" className="h-8 w-8" /></NavLink>
           </div>
         </header>
         <Outlet />

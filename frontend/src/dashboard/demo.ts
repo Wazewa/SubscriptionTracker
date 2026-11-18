@@ -1,5 +1,14 @@
 import { localDateKey, type DashboardData } from './model';
 
+// DEV-only fixture. Goes through the same normalization as the real API data.
+export const demoBreakdownSubscriptions = [
+  { id: 1, name: 'Месячная', amount: 1000, period: 'MONTHLY', periodDays: null },
+  { id: 2, name: 'Недельная', amount: 120, period: 'WEEKLY', periodDays: null },
+  { id: 3, name: 'Квартальная', amount: 1500, period: 'CUSTOM', periodDays: 90 },
+  { id: 4, name: 'Годовая', amount: 7200, period: 'YEARLY', periodDays: null },
+  { id: 5, name: 'Произвольная', amount: 290, period: 'CUSTOM', periodDays: 15 },
+].map(row => ({ ...row, currency: 'RUB', categoryId: 1, status: 'ACTIVE', nextPaymentDate: '2099-01-01' }));
+
 export function createDemoDashboard(now = new Date()): DashboardData {
   const nextDate = (offset: number) => {
     const date = new Date(now);

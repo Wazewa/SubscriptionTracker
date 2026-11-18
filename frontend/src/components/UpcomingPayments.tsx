@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import DashboardBlockHeader, { dashboardRetryClass } from './DashboardBlockHeader';
 import { formatPaymentDate, nearestPayments, type UpcomingPayment } from '../dashboard/model';
 import { formatStatsMoney } from '../dashboard/statsModel';
 
@@ -45,13 +46,9 @@ export default function UpcomingPayments({ state, onRetry, onShowAll, today, cur
   const rows = state.kind === 'ready' ? nearestPayments(state.payments, today) : [];
   return <section aria-labelledby={titleId} aria-busy={state.kind === 'loading'}
     className="relative min-w-0 rounded-3xl border border-[#e1e5dc] bg-white p-5 sm:p-6">
-    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-      <h2 id={titleId} className="font-unbounded text-lg text-[#285d25]">Ближайшие списания</h2>
-      <button type="button" aria-label="Все ближайшие списания" aria-haspopup="dialog" onClick={onShowAll}
-        disabled={!onShowAll || state.kind !== 'ready' || rows.length === 0}
-        title={!onShowAll ? 'Полный список списаний скоро будет доступен' : undefined}
-        className="min-h-11 rounded-lg px-2 text-sm text-[#2e9b62] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:cursor-not-allowed disabled:opacity-50">Все</button>
-    </div>
+    <DashboardBlockHeader titleId={titleId} title="Ближайшие списания" action="Все" actionLabel="Все ближайшие списания"
+      onAction={onShowAll} disabled={!onShowAll || state.kind !== 'ready' || rows.length === 0}
+      actionTitle={!onShowAll ? 'Полный список списаний скоро будет доступен' : undefined} />
     {state.kind === 'loading' && <>
       <p role="status" className="sr-only">Загружаем ближайшие списания…</p>
       <div aria-hidden="true">{[1, 2, 3, 4].map((row) => <div key={row} className="flex min-h-20 items-center gap-3">
@@ -63,7 +60,7 @@ export default function UpcomingPayments({ state, onRetry, onShowAll, today, cur
     {state.kind === 'unavailable' && <p role="status" className="py-6 text-sm leading-relaxed text-[#687468]">API ближайших списаний пока не подключён. Платежи появятся после интеграции с backend.</p>}
     {state.kind === 'error' && <div role="alert" className="py-6 text-sm text-[#687468]">
       <p>Не удалось загрузить ближайшие списания.</p>
-      <button type="button" onClick={onRetry} className="mt-3 min-h-11 rounded-lg px-2 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-green-700">Повторить загрузку списаний</button>
+      <button type="button" onClick={onRetry} className={dashboardRetryClass}>Повторить загрузку</button>
     </div>}
     {state.kind === 'ready' && (rows.length > 0 ? <PaymentRows payments={rows} currency={currency} /> : <p role="status" className="py-6 text-sm text-[#687468]">Предстоящих списаний нет.</p>)}
     {state.kind === 'ready' && rows.length > 0 && !onShowAll && <p className="mt-3 text-xs leading-relaxed text-[#687468]">Полный список списаний скоро будет доступен.</p>}

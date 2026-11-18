@@ -5,8 +5,10 @@ import { HttpError } from '../api/client';
 import { createDashboardApi, type DashboardCurrency } from './api';
 import { localDateKey, validateDashboard, type DashboardData } from './model';
 import type { DashboardStats } from './statsModel';
+import { aggregateAmountBreakdown, type AmountBreakdown } from './amountBreakdownModel';
+import { parseSubscriptions } from '../subscriptions/model';
 export type DemoScenario = 'data' | 'empty' | 'error' | 'loading';
-type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: DashboardData; stats: DashboardStats };
+type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: DashboardData; stats: DashboardStats; breakdown: AmountBreakdown };
 export function useDashboard(scenario: DemoScenario, month = localDateKey().slice(0, 7), currency: DashboardCurrency = 'RUB') {
   const { user, logout } = useAuth();
   const isDemo = import.meta.env.DEV && user?.isDemo === true;
@@ -33,7 +35,10 @@ export function useDashboard(scenario: DemoScenario, month = localDateKey().slic
             ? { month: localDateKey().slice(0, 7), currency: 'RUB', subscriptionCount: 0, totalMinor: 0, categories: [], upcoming: [] }
             : createDemoDashboard();
           const { createDemoDashboardStats } = await import('./statsDemo');
-          complete({ kind: 'ready', data: validateDashboard(data), stats: createDemoDashboardStats(scenario === 'empty') });
+          const stats = createDemoDashboardStats(scenario === 'empty');
+          const { demoBreakdownSubscriptions } = await import('./demo');
+          const breakdown = aggregateAmountBreakdown(parseSubscriptions(scenario === 'empty' ? [] : demoBreakdownSubscriptions), stats.currency, stats.monthlyEquivalentMinor);
+          complete({ kind: 'ready', data: validateDashboard(data), stats, breakdown });
         } catch (error) { fail(error); }
       }, 650);
     } else {

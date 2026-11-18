@@ -28,16 +28,40 @@ test('mismatched months, totals, duplicated IDs, unsupported currencies and impo
     const f=fixture();change(f);assert.throws(()=>parseDashboard(...f,'2026-11','RUB'));
   }
 });
-test('API uses three authenticated endpoints and a complete untruncated upcoming list',async()=>{
+test('API loads subscriptions with the same authentication and cancellation and preserves server aggregates',async()=>{
   const calls=[];const signal=new AbortController().signal;const f=fixture();
-  const request=async(url,options)=>{calls.push({url,options}); return new Response(JSON.stringify(f[url.includes('/summary')?0:url.includes('/categories')?1:2]));};
+  const subscriptions = [{id:1,name:'Ruble',amount:120,currency:'RUB'}, {id:2,name:'Dollar',amount:10,currency:'USD'}].map(row=>({...row,categoryId:1,period:'MONTHLY',periodDays:null,status:'ACTIVE',nextPaymentDate:'2026-11-20'}));
+  const request=async(url,options)=>{calls.push({url,options}); return new Response(JSON.stringify(url.includes('/subscriptions/me') ? subscriptions : f[url.includes('/summary')?0:url.includes('/categories')?1:2]));};
   const result=await createDashboardApi('/api',request).load('test-token','2026-11','RUB',signal);
   assert.equal(result.stats.scheduledChargesMinor,24000);
-  assert.deepEqual(calls.map(c=>c.url),['/api/dashboard/summary?month=2026-11','/api/dashboard/categories?month=2026-11','/api/dashboard/upcoming']);
+  assert.equal(result.breakdown.groups[0].amountMinor,12000);
+  assert.equal(result.data.subscriptionCount,1);
+  assert.deepEqual(calls.map(c=>c.url),['/api/dashboard/summary?month=2026-11','/api/dashboard/categories?month=2026-11','/api/dashboard/upcoming','/api/subscriptions/me']);
   assert.ok(calls.every(c=>c.options.headers.Authorization==='Bearer test-token' && c.options.signal));
 });
 test('401, 403, server errors and cancellation never return demo data',async()=>{
   for(const status of [401,403,500]) await assert.rejects(createDashboardApi('/api',async()=>new Response('private details',{status})).load('test-token','2026-11','RUB'),e=>e.status===status && !e.message.includes('private details'));
   const c=new AbortController();c.abort();let calls=0;
   await assert.rejects(createDashboardApi('/api',async()=>{calls++;return new Response('{}');}).load('test-token','2026-11','RUB',c.signal),{name:'AbortError'}); assert.equal(calls,0);
+});
+
+test('subscription endpoint failures and inconsistent snapshots cannot produce a fake ready breakdown', async () => {
+  const f = fixture();
+  for (const response of [
+    () => new Response('denied', { status: 403 }),
+    () => new Response(JSON.stringify([])),
+    () => new Response(JSON.stringify([{id:1,name:'Ruble',amount:121,currency:'RUB',categoryId:1,period:'MONTHLY',periodDays:null,status:'ACTIVE',nextPaymentDate:'2026-11-20'}])),
+  ]) {
+    const request = async url => url.includes('/subscriptions/me') ? response() : new Response(JSON.stringify(f[url.includes('/summary')?0:url.includes('/categories')?1:2]));
+    await assert.rejects(createDashboardApi('/api', request).load('test-token', '2026-11', 'RUB'));
+  }
+});
+
+test('empty subscription and Dashboard replies produce a genuine empty breakdown', async () => {
+  const request = async url => new Response(JSON.stringify(url.includes('/subscriptions/me') ? [] : url.includes('/upcoming')
+    ? {payments:[],totalCount:0,totals:[]} : {month:'2026-11',currencies:[]}));
+  const result = await createDashboardApi('/api', request).load('test-token', '2026-11', 'EUR');
+  assert.equal(result.stats.monthlyEquivalentMinor, 0);
+  assert.equal(result.data.subscriptionCount, 0);
+  assert.ok(result.breakdown.groups.every(group => group.amountMinor === 0 && group.count === 0 && group.percentage === 0));
 });

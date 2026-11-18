@@ -1,4 +1,6 @@
 import { createApiClient } from '../api/client.ts';
+import { parseSubscriptions } from '../subscriptions/model.ts';
+import { aggregateAmountBreakdown } from './amountBreakdownModel.ts';
 import { isDateKey, validateDashboard, type CategoryTotal, type DashboardData } from './model.ts';
 import { isStatsMonth, validateDashboardStats, type DashboardStats } from './statsModel.ts';
 
@@ -73,11 +75,16 @@ export function createDashboardApi(base = '/api', request: typeof fetch = fetch)
     async load(token: string, month: string, selected: DashboardCurrency, signal?: AbortSignal) {
       if (!isStatsMonth(month)) return invalid();
       const query = `?month=${encodeURIComponent(month)}`;
-      const [summary, categories, upcoming] = await Promise.all([
+      const [summary, categories, upcoming, subscriptions] = await Promise.all([
         send('/dashboard/summary' + query, token, {}, signal), send('/dashboard/categories' + query, token, {}, signal),
         send('/dashboard/upcoming', token, {}, signal),
+        send('/subscriptions/me', token, {}, signal),
       ]);
-      return parseDashboard(summary, categories, upcoming, month, selected);
+      const result = parseDashboard(summary, categories, upcoming, month, selected);
+      const rows = parseSubscriptions(subscriptions);
+      const breakdown = aggregateAmountBreakdown(rows, selected, result.stats.monthlyEquivalentMinor);
+      result.data.subscriptionCount = rows.filter(row => row.status === 'ACTIVE' && row.currency === selected).length;
+      return { ...result, breakdown };
     },
     async categories(token: string, month: string, selected: DashboardCurrency, signal?: AbortSignal) {
       if (!isStatsMonth(month)) return invalid();

@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import CategoryChart from '../components/CategoryChart';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
 import UpcomingPaymentsModal from '../components/UpcomingPaymentsModal';
-import DashboardSkeleton from '../components/DashboardSkeleton';
 import DashboardStatsCards from '../components/DashboardStatsCards';
+import DashboardAmountBreakdown from '../components/DashboardAmountBreakdown';
 import UpcomingPayments, { type UpcomingPaymentsState } from '../components/UpcomingPayments';
 import { useDashboard, type DemoScenario } from '../dashboard/useDashboard';
 import { createDashboardApi, dashboardCurrencies, type DashboardCurrency } from '../dashboard/api';
@@ -48,20 +48,19 @@ export default function Dashboard() {
         if (isDemo && scenario === 'error') setScenario('data');
         else reload();
       }} />
+      <DashboardAmountBreakdown state={state.kind === 'ready'
+        ? { kind: 'ready', data: state.breakdown }
+        : { kind: state.kind }} onRetry={() => {
+          if (isDemo && scenario === 'error') setScenario('data');
+          else reload();
+        }} />
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
-        {state.kind === 'loading' && <DashboardSkeleton />}
-        {state.kind === 'error' && <section role="alert" className="rounded-3xl border border-[#cbdcc7] bg-white p-7">
-          <h2 className="font-unbounded text-lg">Не удалось загрузить сводку</h2>
-          <p className="mt-3 text-sm text-[#687468]">{state.message}</p>
-          <button type="button" onClick={() => { if (scenario === 'error') setScenario('data'); else reload(); }} className={`${actionClass} mt-5`}>Повторить загрузку</button>
-        </section>}
-        {state.kind === 'ready' && <div className="min-w-0">
-          {state.data.subscriptionCount === 0 ? <section className="rounded-3xl border border-[#cbdcc7] bg-white p-8 text-center">
-            <h2 className="font-unbounded text-xl">У вас пока нет подписок</h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-[#687468]">Добавьте первую подписку, чтобы видеть расходы по категориям и ближайшие списания.</p>
-            <Link to="/subscriptions/new" className={`${actionClass} mt-6`}>Добавить первую подписку</Link>
-          </section> : <CategoryChart currency={state.data.currency} categories={state.data.categories} onOpenDetails={() => setModal('categories')} />}
-        </div>}
+        <CategoryChart kind={state.kind} currency={currency}
+          categories={state.kind === 'ready' ? state.data.categories : []}
+          noSubscriptions={state.kind === 'ready' && state.data.subscriptionCount === 0}
+          errorMessage={state.kind === 'error' ? state.message : undefined}
+          onOpenDetails={() => setModal('categories')}
+          onRetry={() => { if (isDemo && scenario === 'error') setScenario('data'); else reload(); }} />
         <UpcomingPayments currency={currency} state={upcomingState} onShowAll={() => setModal('payments')} onRetry={() => { if (isDemo && scenario === 'error') setScenario('data'); else reload(); }} />
       </div>
       {isDemo && <section aria-label="Режим демонстрации" className="mt-6 rounded-2xl border border-[#cbdcc7] bg-[#eef4e9] px-4 py-3 text-xs">

@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'rea
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
+import VkCallback from './pages/VkCallback';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
 import SubscriptionsPage from './pages/SubscriptionsPage';
@@ -34,6 +35,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/auth/vk/callback" element={<VkCallback />} />
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

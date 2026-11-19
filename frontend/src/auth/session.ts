@@ -13,7 +13,7 @@ export function readSession(key: string, storage = browserStorage()): string | n
 export function clearAuthSession(storage = browserStorage()): void {
   // Remove keys independently: failure for one must not skip the other.
   // Never clear unrelated application/browser data.
-  for (const key of [TOKEN_KEY, DEMO_KEY]) {
+  for (const key of [TOKEN_KEY, DEMO_KEY, 'subscription-tracker.vk-login']) {
     try { storage?.removeItem(key); } catch { /* In-memory logout still works when storage is unavailable. */ }
   }
 }

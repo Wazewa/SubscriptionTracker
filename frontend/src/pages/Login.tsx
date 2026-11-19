@@ -46,16 +46,15 @@ export default function Login() {
     }
   }
   return (
-    <main className="flex min-h-screen flex-col items-center bg-[#f7f8f4] px-4 py-6">
-      <Logo subtitle="Удобный способ управлять вашими подписками" />
-
-      <section className="mt-2 w-full max-w-[504px] rounded-[26px] border border-[#eeeeea] bg-white px-8 py-5 shadow-[0_2px_6px_rgba(0,0,0,0.12)] sm:px-[52px]">
-        <h2 className="mb-5 text-center text-[23px] font-bold text-[#123d12]">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#f7f8f4] px-4 py-2">
+      <section aria-label="Вход в систему" className="w-full max-w-[438px] rounded-[24px] border border-[#eeeeea] bg-white px-5 pb-2 pt-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.16)] sm:px-[46px]">
+        <div className="-mx-3 sm:-mx-7"><Logo compact subtitle="Удобный способ управлять вашими подписками" /></div>
+        <h2 className="mb-0 text-center text-[21px] font-bold text-[#171717]">
           Вход в систему
         </h2>
 
         <form
-          className="space-y-[15px]"
+          className="space-y-[18px]"
           onSubmit={handleSubmit}
           aria-busy={pending}
         >
@@ -63,12 +62,12 @@ export default function Login() {
           <div>
             <label
               htmlFor="email"
-              className="mb-0.5 block text-[22px] font-bold leading-tight text-[#285d25]"
+              className="mb-0.5 block px-[10px] text-[16px] font-bold leading-[16px] text-[#285d25]"
             >
               Email
             </label>
 
-            <div className="flex h-[43px] items-center gap-4 rounded-[16px] border-2 border-[#285d25] px-3">
+            <div className="flex h-[37px] items-center gap-[14px] rounded-[14px] border-2 border-[#285d25] px-3 focus-within:ring-2 focus-within:ring-[#3ba273]/30">
               <img src={mailIcon} alt="" className="h-6 w-6 shrink-0" />
 
               <input
@@ -87,12 +86,12 @@ export default function Login() {
           <div>
             <label
               htmlFor="password"
-              className="mb-0.5 block text-[22px] font-bold leading-tight text-[#285d25]"
+              className="mb-0.5 block px-[10px] text-[16px] font-bold leading-[16px] text-[#285d25]"
             >
               Пароль
             </label>
 
-            <div className="flex h-[43px] items-center gap-4 rounded-[16px] border-2 border-[#285d25] px-3">
+            <div className="flex h-[37px] items-center gap-[14px] rounded-[14px] border-2 border-[#285d25] px-3 focus-within:ring-2 focus-within:ring-[#3ba273]/30">
               <img src={lock1Icon} alt="" className="h-6 w-6 shrink-0" />
 
               <input
@@ -112,27 +111,29 @@ export default function Login() {
           <button
             type="submit"
             disabled={pending}
-            className="font-unbounded mt-2 w-full rounded-full bg-[#3ba273] py-[9px] text-[20px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="font-unbounded !mt-3 flex min-h-[38px] w-full items-center justify-center rounded-full bg-[#3ba273] px-3 py-1 text-[18px] font-bold text-white hover:bg-[#318c62] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285d25] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {pending && !vkPending ? 'Входим…' : 'Войти'}
           </button>
           {message && <p role="alert" className="text-sm text-red-700">{message}</p>}
         </form>
+        <div className="my-[7px] flex items-center text-[18px] leading-5 text-[#171717]" aria-hidden="true">
+          <span className="h-px flex-1 bg-[#3ba273]" /><span className="px-0.5">или</span><span className="h-px flex-1 bg-[#3ba273]" />
+        </div>
         <button type="button" onClick={handleVkLogin} disabled={pending} aria-busy={vkPending}
-          className="mt-4 flex min-h-11 w-full items-center justify-center rounded-full bg-[#0077ff] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#0066dd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0077ff] disabled:cursor-not-allowed disabled:opacity-50">
+          className="font-unbounded flex min-h-[38px] w-full items-center justify-center rounded-full border-2 border-[#285d25] bg-white px-3 py-1 text-[17px] font-bold text-[#216b43] transition-colors hover:bg-[#f0f7ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285d25] disabled:cursor-not-allowed disabled:opacity-50">
           {vkPending ? 'Открываем ВК…' : 'Войти через ВК'}
         </button>
-      </section>
-
-      <p className="mt-3 text-center text-[15px] font-bold text-[#123d12]">
+      <p className="mb-0 mt-[20px] text-center text-[14px] font-bold text-[#123d12]">
         Нет аккаунта?{" "}
         <Link
           to="/register"
-          className="font-bold text-[#285d25] hover:underline"
+          className="font-bold text-[#3ba273] hover:underline"
         >
           Зарегистрироваться
         </Link>
       </p>
+      </section>
       <DemoEntry />
     </main>
   );

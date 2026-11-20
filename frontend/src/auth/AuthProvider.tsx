@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createAuthApi } from './api';
 import { clearAuthSession, readSession, TOKEN_KEY, DEMO_KEY } from './session';
+import type { VkPayload } from './vk';
 
 type User = { email: string; isDemo?: boolean };
-type AuthState = { user: User | null; loading: boolean; error: string; login: (email: string, password: string) => Promise<void>; startDemo: () => void; logout: () => void };
+type AuthState = { user: User | null; loading: boolean; error: string; login: (email: string, password: string) => Promise<void>; loginWithVk: (payload: VkPayload) => Promise<void>; startDemo: () => void; logout: () => void };
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -49,6 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     catch { throw new Error('Разрешите хранение сессии в браузере, чтобы войти.'); }
     setUser(profile); setLoading(false);
   }
+  const loginWithVk = useCallback(async (payload: VkPayload) => {
+    const current = ++generation.current;
+    const api = createAuthApi(import.meta.env.VITE_API_BASE_URL || '/api');
+    setError('');
+    const token = await api.loginWithVk(payload);
+    const profile = await api.me(token);
+    if (current !== generation.current) throw new Error('Вход отменён. Повторите попытку.');
+    try { sessionStorage.removeItem(DEMO_KEY); sessionStorage.setItem(TOKEN_KEY, token); }
+    catch { throw new Error('Разрешите хранение сессии в браузере, чтобы войти.'); }
+    setUser(profile); setLoading(false);
+  }, []);
   const logout = useCallback(() => {
     generation.current += 1;
     clearAuthSession();
@@ -60,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.setItem(DEMO_KEY, 'true'); } catch { /* Fall back to memory for this page. */ }
     setUser({ email: 'demo@example.com', isDemo: true }); setError(''); setLoading(false);
   }
-  return <AuthContext.Provider value={{ user, loading, error, login, startDemo, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, error, login, loginWithVk, startDemo, logout }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() {
   const context = useContext(AuthContext);

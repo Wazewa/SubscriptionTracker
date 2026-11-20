@@ -2,6 +2,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_VK_CLIENT_ID: ${VK_CLIENT_ID:-}
+        VITE_VK_REDIRECT_URI: ${VK_REDIRECT_URI:-}
     container_name: subscriptions-frontend
     ports:
       - "3000:80"

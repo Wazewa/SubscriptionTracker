@@ -28,7 +28,7 @@ test('failure removing token does not skip removal of demo session', () => {
     calls.push(key);
     if (key === TOKEN_KEY) throw new Error('Storage unavailable');
   } });
-  assert.deepEqual(calls, [TOKEN_KEY, DEMO_KEY]);
+  assert.deepEqual(calls, [TOKEN_KEY, DEMO_KEY, 'subscription-tracker.vk-login']);
 });
 
 test('blocked or absent storage does not throw during session cleanup', () => {

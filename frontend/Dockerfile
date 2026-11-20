@@ -3,6 +3,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ARG VITE_VK_CLIENT_ID
+ARG VITE_VK_REDIRECT_URI
+ENV VITE_VK_CLIENT_ID=$VITE_VK_CLIENT_ID
+ENV VITE_VK_REDIRECT_URI=$VITE_VK_REDIRECT_URI
 RUN npm run build
 
 FROM nginx:stable-alpine AS runtime

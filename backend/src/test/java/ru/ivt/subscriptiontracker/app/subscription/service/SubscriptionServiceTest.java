@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -100,6 +102,69 @@ class SubscriptionServiceTest {
                 FIXED_DATE, "MONTHLY", null,
                 SubscriptionStatus.ACTIVE, FIXED_TS, FIXED_TS, 1L
         );
+    }
+
+    @Nested
+    @DisplayName("confirmPayment")
+    class ConfirmPayment {
+
+        @BeforeEach
+        void authenticate() {
+            when(currentUserService.getEmail()).thenReturn("me@example.com");
+            when(userService.findByEmail("me@example.com")).thenReturn(currentUser);
+        }
+
+        @ParameterizedTest
+        @EnumSource(PeriodType.class)
+        void activatesUnpaidSubscriptionAndAdvancesOnePeriod(PeriodType period) {
+            ownSubscription.setStatus("UNPAID");
+            ownSubscription.setNextPaymentDate(LocalDate.now().minusYears(1));
+            ownSubscription.setPeriod(period);
+            ownSubscription.setPeriodDays(period == PeriodType.CUSTOM ? 90 : null);
+            when(subscriptionRepository.findByIdAndUser(10L, currentUser))
+                    .thenReturn(Optional.of(ownSubscription));
+            when(subscriptionRepository.saveAndFlush(ownSubscription)).thenReturn(ownSubscription);
+            when(subscriptionMapper.toResponse(ownSubscription)).thenReturn(response(10L));
+
+            LocalDate today = LocalDate.now();
+            assertThat(subscriptionService.confirmPayment(10L).id()).isEqualTo(10L);
+
+            LocalDate expected = switch (period) {
+                case WEEKLY -> today.plusWeeks(1);
+                case MONTHLY -> today.plusMonths(1);
+                case YEARLY -> today.plusYears(1);
+                case CUSTOM -> today.plusDays(90);
+            };
+            assertThat(ownSubscription.getStatus()).isEqualTo("ACTIVE");
+            assertThat(ownSubscription.getNextPaymentDate()).isEqualTo(expected);
+        }
+
+        @Test
+        void confirmsDueActiveSubscriptionOnlyOnce() {
+            ownSubscription.setStatus("ACTIVE");
+            ownSubscription.setNextPaymentDate(LocalDate.now());
+            ownSubscription.setPeriod(PeriodType.WEEKLY);
+            when(subscriptionRepository.findByIdAndUser(10L, currentUser))
+                    .thenReturn(Optional.of(ownSubscription));
+            when(subscriptionRepository.saveAndFlush(ownSubscription)).thenReturn(ownSubscription);
+
+            subscriptionService.confirmPayment(10L);
+            LocalDate nextPaymentDate = ownSubscription.getNextPaymentDate();
+            assertThatThrownBy(() -> subscriptionService.confirmPayment(10L))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            assertThat(ownSubscription.getNextPaymentDate()).isEqualTo(nextPaymentDate);
+            verify(subscriptionRepository).saveAndFlush(ownSubscription);
+        }
+
+        @Test
+        void rejectsSubscriptionOwnedByAnotherUser() {
+            when(subscriptionRepository.findByIdAndUser(20L, currentUser)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> subscriptionService.confirmPayment(20L))
+                    .isInstanceOf(SubscriptionNotFoundException.class);
+            verify(subscriptionRepository, never()).saveAndFlush(any());
+        }
     }
 
     @Nested

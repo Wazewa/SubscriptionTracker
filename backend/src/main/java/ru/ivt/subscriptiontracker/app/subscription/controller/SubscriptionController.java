@@ -66,6 +66,22 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.updateMySubscriptions(id, subscriptionRequest));
     }
 
+    @Operation(summary = "Подтвердить оплату подписки", description = "Подтверждает оплату неоплаченной подписки "
+            + "или активной подписки с наступившей датой списания. Возвращает активную подписку "
+            + "с датой следующего списания через один период от дня подтверждения.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Оплата подтверждена"),
+            @ApiResponse(responseCode = "400", description = "Нет платежа для подтверждения или задан неверный период"),
+            @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "404", description = "Подписка не найдена")
+    })
+    @PostMapping("/{id}/confirm-payment")
+    public ResponseEntity<SubscriptionResponse> confirmPayment(
+            @Parameter(description = "ID подписки", example = "1")
+            @PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.confirmPayment(id));
+    }
+
     @Operation(summary = "Удалить подписку", description = "Удаляет подписку текущего пользователя по её ID")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Подписка успешно удалена"),

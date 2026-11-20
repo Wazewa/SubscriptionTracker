@@ -8,6 +8,7 @@ import ru.ivt.subscriptiontracker.app.security.CurrentUserService;
 import ru.ivt.subscriptiontracker.app.subscription.dto.SubscriptionRequest;
 import ru.ivt.subscriptiontracker.app.subscription.dto.SubscriptionResponse;
 import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionEntity;
+import ru.ivt.subscriptiontracker.app.subscription.entity.SubscriptionStatus;
 import ru.ivt.subscriptiontracker.app.subscription.exception.SubscriptionNotFoundException;
 import ru.ivt.subscriptiontracker.app.subscription.mapper.SubscriptionMapper;
 import ru.ivt.subscriptiontracker.app.subscription.repository.SubscriptionRepository;
@@ -17,6 +18,7 @@ import ru.ivt.subscriptiontracker.app.category.entity.CategoryEntity;
 import ru.ivt.subscriptiontracker.app.category.exception.CategoryNotFoundException;
 import ru.ivt.subscriptiontracker.app.category.repository.CategoryRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -81,6 +83,40 @@ public class SubscriptionService {
         );
     }
 
+
+    @Transactional
+    public SubscriptionResponse confirmPayment(Long id) {
+        User user = userService.findByEmail(currentUserService.getEmail());
+        SubscriptionEntity subscription = subscriptionRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new SubscriptionNotFoundException("Subscription not found"));
+
+        LocalDate today = LocalDate.now();
+        String status = subscription.getStatus();
+        boolean activeAndDue = SubscriptionStatus.ACTIVE.name().equals(status)
+                && !subscription.getNextPaymentDate().isAfter(today);
+        if (!SubscriptionStatus.UNPAID.name().equals(status) && !activeAndDue) {
+            throw new IllegalArgumentException("Subscription has no payment to confirm");
+        }
+
+        LocalDate nextPaymentDate = switch (subscription.getPeriod()) {
+            case WEEKLY -> today.plusWeeks(1);
+            case MONTHLY -> today.plusMonths(1);
+            case YEARLY -> today.plusYears(1);
+            case CUSTOM -> {
+                Integer periodDays = subscription.getPeriodDays();
+                if (periodDays == null || periodDays <= 0) {
+                    throw new IllegalArgumentException("Custom subscription requires a positive period in days");
+                }
+                yield today.plusDays(periodDays);
+            }
+        };
+        subscription.setNextPaymentDate(nextPaymentDate);
+        subscription.setStatus(SubscriptionStatus.ACTIVE.name());
+
+        SubscriptionEntity saved = subscriptionRepository.saveAndFlush(subscription);
+        log.info("Confirmed payment for subscription id={} for user id={}", id, user.getUserId());
+        return subscriptionMapper.toResponse(saved);
+    }
 
     @Transactional
     public void deleteMySubscriptions(Long id) {

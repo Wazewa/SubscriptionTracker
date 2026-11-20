@@ -62,10 +62,9 @@ git fetch "$TARGET_REMOTE"
 
 SOURCE_BASE="${SOURCE_REMOTE}/${BASE_BRANCH}"
 TARGET_BASE="${TARGET_REMOTE}/${BASE_BRANCH}"
-SOURCE_TRACKING="${SOURCE_REMOTE}/${SOURCE_BRANCH}"
 
 # 5. Check required remote branches
-for branch in "$SOURCE_BASE" "$TARGET_BASE" "$SOURCE_TRACKING"; do
+for branch in "$SOURCE_BASE" "$TARGET_BASE"; do
     if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
         echo "ERROR: Required branch '$branch' not found."
         exit 1
@@ -87,10 +86,19 @@ fi
 echo "[OK] Master branches contain identical files."
 
 # 7. Check source branch synchronization
-if [[ "$SOURCE_COMMIT" != "$(git rev-parse "$SOURCE_TRACKING")" ]]; then
+if ! REMOTE_SOURCE="$(git ls-remote --heads "$SOURCE_PUSH_URL" "refs/heads/${SOURCE_BRANCH}")"; then
+    echo "ERROR: Could not check Sphere source branch."
+    exit 1
+fi
+
+if [[ -z "$REMOTE_SOURCE" ]]; then
+    echo "[OK] Source branch will be published to Sphere for the first time."
+elif [[ "$SOURCE_COMMIT" != "${REMOTE_SOURCE%%$'\t'*}" ]]; then
     echo "ERROR: Local source branch differs from Sphere."
     echo "Push or synchronize your source branch before continuing."
     exit 1
+else
+    echo "[OK] Source branch is synchronized with Sphere."
 fi
 
 if ! git merge-base --is-ancestor "$SOURCE_BASE" "$SOURCE_COMMIT"; then
@@ -98,8 +106,6 @@ if ! git merge-base --is-ancestor "$SOURCE_BASE" "$SOURCE_COMMIT"; then
     echo "Update it manually and retry."
     exit 1
 fi
-
-echo "[OK] Source branch is synchronized with Sphere."
 
 # 8. Check target branch availability
 LOCAL_TARGET_BRANCH="${LOCAL_PREFIX}/${SOURCE_BRANCH}"
@@ -171,7 +177,9 @@ if [[ ! "$COMMIT_CONFIRM" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-git commit -m "Prepare GitHub PR for ${SOURCE_BRANCH}"
+git commit \
+    -m "Prepare GitHub PR for ${SOURCE_BRANCH}" \
+    -m "Source-Commit: $SOURCE_COMMIT"
 
 TARGET_COMMIT="$(git rev-parse HEAD)"
 

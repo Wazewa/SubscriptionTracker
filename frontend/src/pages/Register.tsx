@@ -67,11 +67,10 @@ export default function Register() {
     </main>
   );
   return (
-    <main className="flex min-h-screen flex-col items-center bg-[#f7f8f4] px-4 py-6">
-      <Logo />
-
-      <section className="mt-2 w-full max-w-[504px] rounded-[26px] border border-[#eeeeea] bg-white px-5 py-2 shadow-[0_2px_6px_rgba(0,0,0,0.12)] sm:px-[52px]">
-        <h2 className="mb-1 break-words text-center text-xl font-bold text-[#123d12] sm:text-[23px]">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#f7f8f4] px-4 py-4">
+      <section aria-label="Регистрация" className="w-full max-w-[438px] rounded-[24px] border border-[#eeeeea] bg-white px-5 pb-4 pt-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.16)] sm:px-[46px]">
+        <div className="-mx-3 sm:-mx-7"><Logo compact /></div>
+        <h2 className="mb-3 mt-1 break-words text-center text-[21px] font-bold text-[#171717]">
           Зарегистрироваться
         </h2>
 
@@ -85,7 +84,7 @@ export default function Register() {
           <div>
             <label
               htmlFor="email"
-              className="mb-0.5 block text-[22px] font-bold leading-tight text-[#285d25]"
+              className="mb-0.5 block px-[10px] text-[16px] font-bold leading-tight text-[#285d25]"
             >
               Email
             </label>
@@ -113,7 +112,7 @@ export default function Register() {
           <div>
             <label
               htmlFor="password"
-              className="mb-0.5 block text-[22px] font-bold leading-tight text-[#285d25]"
+              className="mb-0.5 block px-[10px] text-[16px] font-bold leading-tight text-[#285d25]"
             >
               Пароль
             </label>
@@ -142,7 +141,7 @@ export default function Register() {
           <div>
             <label
               htmlFor="repeatPassword"
-              className="mb-0.5 block text-[22px] font-bold leading-tight text-[#285d25]"
+              className="mb-0.5 block px-[10px] text-[16px] font-bold leading-tight text-[#285d25]"
             >
               Повторите пароль
             </label>
@@ -183,23 +182,22 @@ export default function Register() {
             type="submit"
             disabled={!canAgree || pending}
             aria-describedby="registration-unavailable consent-note"
-            className="font-unbounded mt-1 min-h-11 w-full break-words rounded-full bg-[#3ba273] px-2 py-[9px] text-sm font-bold text-white transition-colors hover:bg-[#318b62] active:bg-[#287650] disabled:opacity-50 disabled:cursor-not-allowed sm:text-[20px]"
+            className="font-unbounded mt-1 min-h-11 w-full break-words rounded-full bg-[#3ba273] px-2 py-[9px] text-sm font-bold text-white transition-colors hover:bg-[#318b62] active:bg-[#287650] disabled:opacity-50 disabled:cursor-not-allowed sm:text-[17px]"
           >
             {pending ? 'Создаём аккаунт…' : 'Зарегистрироваться'}
           </button>
         </form>
-      </section>
-
-      <p className="mt-3 text-center text-[15px] font-bold text-[#123d12]">
+      <p className="mt-4 text-center text-[14px] font-bold text-[#123d12]">
         Уже есть аккаунт?{" "}
         <Link
           to="/login"
-          className="font-bold text-[#285d25] hover:underline"
+          className="font-bold text-[#3ba273] hover:underline"
         >
           Войти
         </Link>
       </p>
       <p id="registration-unavailable" className="mt-4 text-center text-sm text-[#687468]">{consentDocument.approved ? 'Отправка письма подтверждения пока не подключена.' : 'API подключён. Создание аккаунта недоступно до утверждения текста согласия.'}</p>
+      </section>
       {import.meta.env.DEV && <button type="button" onClick={() => setPreviewEmail(true)} className="mt-3 rounded-lg border border-[#cbdcc7] px-4 py-2 text-xs text-[#45643b] hover:bg-white focus-visible:outline-2 focus-visible:outline-green-700">Предпросмотр сообщения о почте (без отправки)</button>}
       <ConsentDialog open={consentOpen} onClose={() => setConsentOpen(false)} />
     </main>

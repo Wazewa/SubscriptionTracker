@@ -1,4 +1,5 @@
 import type { PasswordValues } from './password.ts';
+import type { VkPayload } from './vk.ts';
 export type ApiUser = { userId: number; email: string; baseCurrency: string; status: string };
 export type RegisterPayload = { email: string; password: string; confirmPassword: string; personalDataConsent: boolean };
 export class ApiError extends Error {
@@ -55,6 +56,21 @@ export function createAuthApi(base = '/api', request: typeof fetch = fetch) {
     return data as ApiUser;
   }
   return {
+    async loginWithVk(payload: VkPayload): Promise<string> {
+      try {
+        const data = await send('/auth/vk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!data || typeof data !== 'object' || !('token' in data) || typeof data.token !== 'string' || !data.token.trim()) throw new Error('Сервер не вернул токен входа.');
+        return data.token;
+      } catch (error) {
+        if (error instanceof ApiError) {
+          const message = error.status === 409 ? 'Этот email уже используется. Войдите с помощью email и пароля.'
+            : error.status === 400 || error.status === 401 ? 'ВК не подтвердил вход. Начните вход заново.'
+            : 'Вход через ВК временно недоступен. Попробуйте позже.';
+          throw new ApiError(message, error.status);
+        }
+        throw error;
+      }
+    },
     async changePassword(token: string, payload: PasswordValues, signal?: AbortSignal): Promise<void> {
       if (!token.trim()) throw new ApiError('Сессия истекла. Войдите снова.', 401);
       await send('/auth/change-password', { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, signal);

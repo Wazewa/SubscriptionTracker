@@ -110,3 +110,30 @@
 .inbox-payment-message { color: #22633b; background: #eef8e9; padding: 12px; margin-block: 8px; border-radius: 12px; }
 .inbox-payment-section button:disabled { opacity: .6; cursor: wait; }
 .inbox-payment-section button:focus-visible { outline: 2px solid #285d25; outline-offset: 2px; }
+
+/* Действия уведомлений и статусы: элементы помещаются на узком экране. */
+.inbox-bell-count { position: absolute; top: 0; right: -3px; min-width: 19px; height: 19px; display: grid; place-items: center; padding: 0 4px; border-radius: 12px; border: 2px solid #f7f8f4; background: #287847; color: white; font-size: 10px; }
+.inbox-card.is-read { background: #f7f8f6; }
+.inbox-card-open { display: block; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; }
+.inbox-card-title { flex: 1 1 130px; color: #101b10; font-size: 14px; overflow-wrap: anywhere; }
+.inbox-card-open:focus-visible, .inbox-menu button:focus-visible { outline: 2px solid #285d25; outline-offset: 2px; }
+.inbox-unread-status > span { background: #287847; }
+.inbox-menu { margin-top: 4px; }
+.inbox-menu-trigger { display: block; margin-left: auto; width: 44px; min-height: 44px; border-radius: 12px; color: #22633b; font-size: 24px; }
+.inbox-menu-trigger:hover { background: #edf5e8; }
+.inbox-menu-actions { display: flex; flex-direction: column; padding: 6px; border: 1px solid #dce8d4; border-radius: 12px; background: white; box-shadow: 0 2px 5px #23213a12; }
+.inbox-menu-actions button { min-height: 44px; padding: 8px; text-align: left; font-size: 12px; overflow-wrap: anywhere; border-radius: 8px; }
+.inbox-menu-actions button:hover { background: #f3f6f0; }
+.inbox-menu-actions button:disabled { opacity: .5; }
+.inbox-detail { padding: 4px 22px 22px; overflow-y: auto; min-height: 0; font-size: 14px; overflow-wrap: anywhere; }
+.inbox-subscription-info { margin-block: 18px; display: grid; gap: 8px; }
+.inbox-subscription-info dt { font-size: 12px; color: #687468; }
+.inbox-subscription-info dd { margin: 0 0 6px; }
+.inbox-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.inbox-actions > button { min-height: 44px; flex: 1 1 130px; overflow-wrap: anywhere; }
+.inbox-danger { padding: 10px 16px; border-radius: 22px; background: #fce8f5; color: #962465; }
+.inbox-primary:disabled { opacity: .5; cursor: not-allowed; }
+.status-options { display: grid; gap: 8px; margin-block: 20px; }
+.status-options legend { margin-bottom: 8px; }
+.status-options label { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px; border: 1px solid #dce8d4; border-radius: 12px; }
+.status-options input { accent-color: #287847; }

@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import DashboardModal from './DashboardModal';
 import { Link } from 'react-router-dom';
 import {
@@ -30,7 +30,11 @@ export default function UpcomingPaymentsModal({
   onClose,
 }: UpcomingPaymentsModalProps) {
   const titleId = useId();
-  const sortedPayments = futurePayments(payments);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const allPayments = futurePayments(payments);
+  const months = [...new Set(allPayments.map(payment => payment.date.slice(0, 7)))].sort();
+  const effectiveMonth = months.includes(selectedMonth) ? selectedMonth : '';
+  const sortedPayments = allPayments.filter(payment => !effectiveMonth || payment.date.startsWith(effectiveMonth));
 
   const totalMinor = sortedPayments.reduce(
     (sum, payment) => sum + payment.amountMinor,
@@ -78,6 +82,11 @@ export default function UpcomingPaymentsModal({
           </p>
         </header>
 
+        <label className="mx-6 mb-4 text-sm text-[#285d25]">Период
+          <select className="mt-2 block min-h-11 w-full rounded-xl border border-[#cbd2c8] bg-white px-3" value={effectiveMonth} onChange={event => setSelectedMonth(event.target.value)}>
+            <option value="">Все доступные месяцы</option>{months.map(month => <option key={month} value={month}>{formatMonth(`${month}-01`)}</option>)}
+          </select>
+        </label>
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
           {groupedPayments.length === 0 ? (
             <p className="py-10 text-center text-sm text-[#687468]">

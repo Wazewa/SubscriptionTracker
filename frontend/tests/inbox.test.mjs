@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filterInbox, inboxReadKey, loadReadNotifications, saveReadNotifications, notificationDayLabel, notificationPresentation } from '../src/notifications/inboxModel.ts';
+import { filterInbox, inboxReadKey, loadReadNotifications, saveReadNotifications, loadHiddenNotifications, saveHiddenNotifications, notificationDayLabel, notificationPresentation } from '../src/notifications/inboxModel.ts';
 import { createInboxDemo } from '../src/notifications/inboxDemo.ts';
 
 test('filters unread notifications independently of their event type; payments exclude trial and system', () => {
@@ -8,7 +8,7 @@ test('filters unread notifications independently of their event type; payments e
   const read = new Set(['demo-reminder']);
   assert.equal(filterInbox(items, 'all', read).length, 5);
   assert.equal(filterInbox(items, 'unread', read).length, 4);
-  assert.deepEqual(filterInbox(items, 'payments', read).map(item => item.type), ['PAYMENT_REMINDER', 'RENEWAL', 'PRICE_CHANGE']);
+  assert.deepEqual(filterInbox(items, 'payments', read).map(item => item.type), ['PAYMENT_REMINDER', 'PAYMENT_PROBLEM', 'PAYMENT_SUCCESS', 'PRICE_CHANGE']);
   assert.equal(items[0].id, 'demo-reminder');
   assert.deepEqual(filterInbox(items, 'unread', new Set(items.map(item => item.id))), []);
   for (const item of items) assert.ok(notificationPresentation[item.type].title);
@@ -39,4 +39,19 @@ test('date groups respect calendar boundaries including the year transition', ()
   assert.equal(notificationDayLabel(new Date(2027, 0, 1, 9).toISOString(), now), 'Сегодня');
   assert.equal(notificationDayLabel(new Date(2026, 11, 31, 20).toISOString(), now), 'Вчера');
   assert.match(notificationDayLabel(new Date(2026, 11, 30, 20).toISOString(), now), /2026/);
+});
+
+test('hidden notifications are account-specific, persist separately from read state, and tolerate storage failures', () => {
+  const values = new Map();
+  const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  assert.equal(saveHiddenNotifications('First@Example.com', new Set(['1', '2']), storage), true);
+  assert.deepEqual([...loadHiddenNotifications('first@example.com', storage)], ['1', '2']);
+  assert.equal(loadHiddenNotifications('other@example.com', storage).size, 0);
+  assert.equal(loadHiddenNotifications('demo:first@example.com', storage).size, 0);
+  assert.equal(loadReadNotifications('first@example.com', storage).size, 0);
+  assert.equal(saveHiddenNotifications('first@example.com', new Set(['2']), storage), true);
+  assert.deepEqual([...loadHiddenNotifications('first@example.com', storage)], ['2']);
+  assert.equal(loadHiddenNotifications('first@example.com', null).size, 0);
+  assert.equal(saveHiddenNotifications('first@example.com', new Set(), null), false);
+  assert.equal(loadHiddenNotifications('first@example.com', { getItem: () => '{' }).size, 0);
 });

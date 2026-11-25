@@ -97,3 +97,11 @@ test('read timeout aborts fetch and explains retry; write timeout does not claim
   const write = api.remove('token', '1'); const checkedWrite = assert.rejects(write, /изменение могло сохраниться/); t.mock.timers.tick(10000); await checkedWrite;
   assert.equal(calls, 2);
 });
+
+test('UNPAID subscriptions remain visible and are excluded from active subscriptions', () => {
+  const unpaid = parseSubscriptions([{ ...dto, status: 'UNPAID' }], categories)[0];
+  assert.equal(unpaid.status, 'UNPAID');
+  assert.equal(unpaid.active, false);
+  assert.equal(unpaid.name, dto.name);
+  assert.deepEqual(filterSubscriptions([unpaid], empty), [unpaid]);
+});

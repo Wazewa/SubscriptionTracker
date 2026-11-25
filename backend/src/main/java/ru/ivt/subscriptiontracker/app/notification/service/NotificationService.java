@@ -11,6 +11,7 @@ import ru.ivt.subscriptiontracker.app.notification.repository.NotificationReposi
 import ru.ivt.subscriptiontracker.app.security.CurrentUserService;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
 import ru.ivt.subscriptiontracker.app.user.repository.UserRepository;
+import ru.ivt.subscriptiontracker.app.notification.entity.NotificationType;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private static final String TYPE_PAYMENT_REMINDER = "PAYMENT_REMINDER";
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_SENT = "SENT";
     private static final String STATUS_FAILED = "FAILED";
@@ -59,7 +59,7 @@ public class NotificationService {
         n.setUserId(user.getUserId());
         n.setSubscriptionId(subscriptionId);
         n.setMessage(message);
-        n.setType(TYPE_PAYMENT_REMINDER);
+        n.setType(NotificationType.PAYMENT_REMINDER);
         n.setScheduledAt(OffsetDateTime.now());
         n.setStatus(STATUS_PENDING);
         n.setSentToTelegram(false);

@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 
@@ -32,10 +30,8 @@ public class NotificationEntity {
     @Column(name = "sent_to_telegram", nullable = false)
     private boolean sentToTelegram = false;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "type", nullable = false)
-    private NotificationType type;
+    @Column(name = "type", nullable = false, length = 20)
+    private String type;
 
     @Column(name = "scheduled_at", nullable = false)
     private OffsetDateTime scheduledAt;

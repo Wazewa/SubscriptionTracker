@@ -46,3 +46,67 @@
     font-family: "Unbounded", sans-serif;
   }
 }
+
+/* Панель уведомлений: адаптивная ширина для экранов от 320 пикселей. */
+.inbox-bell { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; }
+.inbox-bell:hover { background: #eef4e9; }
+.inbox-bell-dot { position: absolute; top: 5px; right: 7px; width: 9px; height: 9px; border: 2px solid #f7f8f4; border-radius: 50%; background: #f445db; }
+.inbox-heading { display: flex; align-items: flex-start; gap: 8px; padding: 22px 22px 12px; flex-shrink: 0; }
+.inbox-heading > div { min-width: 0; flex: 1; }
+.inbox-heading h2 { margin: 0; outline: none; font-size: clamp(19px, 4vw, 25px); line-height: 1.4; overflow-wrap: anywhere; }
+.inbox-heading p { margin-top: 7px; color: #747b74; font-size: 12px; line-height: 1.5; font-weight: 500; }
+.inbox-close { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; margin: -6px -9px 0 0; border-radius: 50%; font-size: 30px; line-height: 1; cursor: pointer; }
+.inbox-close:hover { background: #f3f6f0; }
+.inbox-demo { padding: 0 22px 10px; color: #6b746b; font-size: 11px; font-weight: 500; }
+.inbox-filters { display: grid; grid-template-columns: .8fr 1.65fr 1fr; gap: 3px; flex-shrink: 0; margin: 0 16px 7px; padding: 4px; border: 1px solid #f1f0f3; border-radius: 24px; box-shadow: 0 2px 5px #23213a12; }
+.inbox-filters button { display: flex; justify-content: center; align-items: center; gap: 4px; min-width: 0; min-height: 44px; padding: 5px 2px; border-radius: 22px; color: #22633b; font-size: 12px; cursor: pointer; }
+.inbox-filters button[aria-pressed="true"] { background: #ed3bd2; color: white; }
+.inbox-filter-count { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 3px; border-radius: 10px; background: #e9f3e7; color: #22633b; font-size: 10px; }
+.inbox-content { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 12px; scrollbar-gutter: stable; }
+.inbox-list { list-style: none; margin: 0; padding: 0; }
+.inbox-day { padding: 11px 6px 8px; color: #256a41; font-size: 13px; }
+.inbox-card { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; padding: 14px 12px 10px; border: 1px solid #eeedf1; border-radius: 16px; background: white; box-shadow: 0 2px 4px #3c275417; }
+.inbox-card.is-unread { background: #f6fff2; border-color: #e3efdf; }
+.inbox-card-body { min-width: 0; flex: 1; }
+.inbox-type { display: grid; place-items: center; flex-shrink: 0; width: 23px; height: 23px; border: 2px solid currentColor; border-radius: 50%; font-size: 14px; line-height: 1; }
+.inbox-type-reminder { color: #148056; }
+.inbox-type-warning { color: #ae247a; }
+.inbox-type-success { color: #216b42; }
+.inbox-type-info { color: #526952; }
+.inbox-card-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 8px; row-gap: 3px; }
+.inbox-card-heading h4 { flex: 1 1 145px; margin: 0; color: #101b10; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.inbox-card-heading time { color: #487052; font-size: 11px; font-weight: 500; }
+.inbox-message { margin: 6px 0 0; color: #414d40; font-weight: 500; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+.inbox-card-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 5px; margin-top: 8px; }
+.inbox-unread-status, .inbox-read-status { display: inline-flex; gap: 5px; align-items: center; color: #596559; font-size: 11px; font-weight: 500; }
+.inbox-unread-status > span { width: 6px; height: 6px; border-radius: 50%; background: #ed3bd2; }
+.inbox-read-button { min-height: 44px; padding: 6px 13px; border-radius: 22px; border: 1px solid #328351; color: #22633b; background: white; font-size: 12px; cursor: pointer; }
+.inbox-read-button:hover { background: #e8f4e3; }
+.inbox-read-status { min-height: 44px; color: #387246; }
+.inbox-state { display: flex; min-height: 260px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 25px 15px; text-align: center; }
+.inbox-state-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #eff6e9; color: #327242; font-size: 28px; }
+.inbox-state h3 { margin: 0; font-size: 16px; }
+.inbox-state p { color: #6a7567; font-size: 13px; font-weight: 500; }
+.inbox-primary { min-height: 44px; padding: 10px 20px; border-radius: 24px; background: #2e9b62; color: white; cursor: pointer; }
+.inbox-footer { flex-shrink: 0; padding: 10px 22px 14px; border-top: 1px solid #edf0e9; }
+.inbox-footer p { color: #6b746b; font-size: 10px; font-weight: 500; line-height: 1.5; }
+.inbox-demo-controls { flex-shrink: 0; padding: 6px 22px; color: #6b746b; font-size: 10px; }
+.inbox-demo-controls summary { min-height: 28px; cursor: pointer; }
+.inbox-demo-controls > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.inbox-demo-controls button { min-height: 36px; padding: 5px 8px; border: 1px solid #dce8d4; border-radius: 8px; cursor: pointer; }
+.inbox-demo-controls button[aria-pressed="true"] { background: #edf5e6; color: #285d25; }
+.inbox-bell:focus-visible, .inbox-close:focus-visible, .inbox-filters button:focus-visible, .inbox-read-button:focus-visible, .inbox-primary:focus-visible, .inbox-demo-controls button:focus-visible, .inbox-demo-controls summary:focus-visible { outline: 2px solid #285d25; outline-offset: 2px; }
+@media (max-width: 380px) {
+  .inbox-heading { padding: 18px 14px 10px; }
+  .inbox-filters { margin-inline: 8px; }
+  .inbox-filters button { font-size: 10px; }
+  .inbox-content { padding-inline: 8px; }
+  .inbox-card { gap: 7px; padding-inline: 10px; }
+}
+.inbox-payment-section { font-size: 12px; overflow-wrap: anywhere; }
+.inbox-payment-hint { color: #687468; padding: 0 6px 10px; font-weight: 500; }
+.inbox-payment-confirm { margin-top: 10px; border-top: 1px solid #dce8d4; padding-top: 10px; line-height: 1.6; }
+.inbox-payment-error { color: #a32121; background: #fff4f4; padding: 12px; margin-block: 8px; border-radius: 12px; }
+.inbox-payment-message { color: #22633b; background: #eef8e9; padding: 12px; margin-block: 8px; border-radius: 12px; }
+.inbox-payment-section button:disabled { opacity: .6; cursor: wait; }
+.inbox-payment-section button:focus-visible { outline: 2px solid #285d25; outline-offset: 2px; }

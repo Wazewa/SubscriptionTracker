@@ -7,6 +7,7 @@ import { localDateKey, validateDashboard, type DashboardData } from './model';
 import type { DashboardStats } from './statsModel';
 import { aggregateAmountBreakdown, type AmountBreakdown } from './amountBreakdownModel';
 import { parseSubscriptions } from '../subscriptions/model';
+import { SUBSCRIPTIONS_CHANGED } from '../subscriptions/events';
 export type DemoScenario = 'data' | 'empty' | 'error' | 'loading';
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: DashboardData; stats: DashboardStats; breakdown: AmountBreakdown };
 export function useDashboard(scenario: DemoScenario, month = localDateKey().slice(0, 7), currency: DashboardCurrency = 'RUB') {
@@ -14,6 +15,11 @@ export function useDashboard(scenario: DemoScenario, month = localDateKey().slic
   const isDemo = import.meta.env.DEV && user?.isDemo === true;
   const [stored, setState] = useState<{ key: string; state: State }>({ key: '', state: { kind: 'loading' } });
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener(SUBSCRIPTIONS_CHANGED, refresh);
+    return () => window.removeEventListener(SUBSCRIPTIONS_CHANGED, refresh);
+  }, []);
   const key = JSON.stringify([user?.email, isDemo, month, currency, scenario, attempt]);
   useEffect(() => {
     const controller = new AbortController();

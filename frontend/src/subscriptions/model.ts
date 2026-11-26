@@ -6,8 +6,9 @@ export type Category = { id: string; name: string; description: string };
 export type Subscription = {
   id: string; name: string; amountMinor: number; monthlyPriceMinor: number | null; currency: Currency;
   categoryId: string; category: string; period: Period; periodDays: number | null;
-  nextPaymentDate: string; active: boolean; status: 'ACTIVE' | 'PAUSED' | 'CANCELLED';
+  nextPaymentDate: string; active: boolean; status: 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'UNPAID';
 };
+export const subscriptionStatusLabels: Record<Subscription['status'], string> = { ACTIVE: 'Активна', PAUSED: 'Неактивна', CANCELLED: 'Отменена', UNPAID: 'Не оплачена' };
 export type SubscriptionFilters = { search: string; category: string; period: string };
 export function validDate(value: unknown): value is string {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -41,7 +42,7 @@ export function parseSubscriptions(value: unknown, categories: Category[] = []):
       || !currencies.includes(row.currency as Currency) || !validId(row.categoryId)
       || typeof row.period !== 'string' || !['WEEKLY', 'MONTHLY', 'YEARLY', 'CUSTOM'].includes(row.period)
       || (row.period === 'CUSTOM' ? !validId(row.periodDays) || row.periodDays > 2147483647 : row.periodDays != null)
-      || !validDate(row.nextPaymentDate) || typeof row.status !== 'string' || !['ACTIVE', 'PAUSED', 'CANCELLED'].includes(row.status)) throw new Error('Некорректные данные подписки.');
+      || !validDate(row.nextPaymentDate) || typeof row.status !== 'string' || !['ACTIVE', 'PAUSED', 'CANCELLED', 'UNPAID'].includes(row.status)) throw new Error('Некорректные данные подписки.');
     ids.add(String(row.id));
     const amountMinor = Math.round(row.amount * 100);
     return { id: String(row.id), name: row.name, amountMinor,

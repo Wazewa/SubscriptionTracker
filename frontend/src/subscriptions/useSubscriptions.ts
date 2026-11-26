@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { readSession, TOKEN_KEY } from '../auth/session';
 import { createSubscriptionsApi, SubscriptionsApiError } from './api';
 import type { Category, Subscription } from './model';
+import { SUBSCRIPTIONS_CHANGED } from './events';
 export type DemoScenario = 'data' | 'empty' | 'loading' | 'error';
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; rows: Subscription[]; categories: Category[] };
 export function useSubscriptions(scenario: DemoScenario = 'data') {
@@ -10,6 +11,11 @@ export function useSubscriptions(scenario: DemoScenario = 'data') {
   const isDemo = import.meta.env.DEV && user?.isDemo === true;
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener(SUBSCRIPTIONS_CHANGED, refresh);
+    return () => window.removeEventListener(SUBSCRIPTIONS_CHANGED, refresh);
+  }, []);
   useEffect(() => {
     const controller = new AbortController(); let timer: number | undefined;
     setState({ kind: 'loading' });

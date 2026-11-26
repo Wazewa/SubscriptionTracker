@@ -5,9 +5,13 @@ import { formatSubscriptionMoney, periodLabels, type Subscription } from '../sub
 import editIcon from '../assets/icons/edit.svg';
 import deleteIcon from '../assets/icons/delete.svg';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import SubscriptionStatusDialog from './SubscriptionStatusDialog';
+import { subscriptionStatusLabels } from '../subscriptions/model';
 
 type Props = {
   rows: Subscription[];
+  initialDeleteId?: string;
+  onDeleteOpened?: () => void;
   loading?: boolean;
   filtered?: boolean;
   onEdit?: (subscription: Subscription) => void;
@@ -20,12 +24,15 @@ const headings = [
   'Цена/мес',
   'Категория',
   'Дата списания',
-  'Активность',
+  'Статус',
+  'Период',
   '',
 ];
 
 export default function SubscriptionsTable({
   rows,
+  initialDeleteId,
+  onDeleteOpened,
   loading = false,
   filtered = false,
   onEdit,
@@ -34,6 +41,13 @@ export default function SubscriptionsTable({
 }: Props) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null);
+  const [statusTarget, setStatusTarget] = useState<Subscription | null>(null);
+  useEffect(() => {
+    if (!initialDeleteId || loading) return;
+    const target = rows.find(row => row.id === initialDeleteId);
+    if (target) setDeleteTarget(target);
+    onDeleteOpened?.();
+  }, [initialDeleteId, loading, rows, onDeleteOpened]);
   useEffect(() => {
     if (openMenuId) document.getElementById(`subscription-menu-${openMenuId}`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [openMenuId]);
@@ -118,17 +132,18 @@ export default function SubscriptionsTable({
                       </td>
 
                       <td className="px-5 py-5">
-                        <span
-                          className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs ${
+                        <button type="button" aria-label={`Изменить статус подписки ${row.name}: ${subscriptionStatusLabels[row.status]}`} onClick={() => setStatusTarget(row)}
+                          className={`min-h-11 inline-flex items-center focus-visible:outline-2 focus-visible:outline-green-700 whitespace-nowrap rounded-full px-3 py-1 text-xs ${
                             row.active
                               ? 'bg-[#e7f3e9] text-[#236337]'
-                              : 'bg-[#f0f1ee] text-[#606960]'
+                              : row.status === 'UNPAID' ? 'bg-[#fce8f5] text-[#962465]' : 'bg-[#f0f1ee] text-[#606960]'
                           }`}
                         >
-                          {{ ACTIVE: 'Активна', PAUSED: 'Приостановлена', CANCELLED: 'Отменена' }[row.status]}
-                        </span>
+                          {subscriptionStatusLabels[row.status]}
+                        </button>
                       </td>
 
+                      <td className="px-5 py-5">{periodLabels[row.period]}{row.period === 'custom' ? `: ${row.periodDays} дн.` : ''}</td>
                       <td className="px-3 py-5">
                         <div className="flex flex-col items-end" onBlur={(event) => {
                           if (!event.currentTarget.contains(event.relatedTarget)) setOpenMenuId(null);
@@ -225,6 +240,7 @@ export default function SubscriptionsTable({
         </div>
       </section>
 
+      {statusTarget && <SubscriptionStatusDialog subscription={statusTarget} onClose={() => setStatusTarget(null)} />}
       {deleteTarget && <DeleteConfirmModal subscription={deleteTarget} isDemo={isDemo} onDelete={onDelete} onClose={() => {
         const buttonId = `subscription-actions-${deleteTarget.id}`;
         setDeleteTarget(null);

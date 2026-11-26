@@ -1,5 +1,7 @@
 
 import { useState, type FormEvent } from 'react';
+import SubscriptionStatusDialog from './SubscriptionStatusDialog';
+import { subscriptionStatusLabels } from '../subscriptions/model';
 import { currencies, localDateKey, periodLabels, type Category, type Subscription } from '../subscriptions/model';
 import { initialFormValues, validateSubscriptionForm, type FormValues, type FormErrors } from '../subscriptions/formModel';
 
@@ -31,6 +33,8 @@ export default function SubscriptionForm({
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState('');
+  const [showStatus, setShowStatus] = useState(false);
+  const [daily, setDaily] = useState(initialSubscription?.period === 'custom' && initialSubscription.periodDays === 1);
 
   function update<K extends keyof FormValues>(
     field: K,
@@ -59,6 +63,7 @@ export default function SubscriptionForm({
   return (
     <section className="w-full min-w-0">
 
+      {showStatus && initialSubscription && <SubscriptionStatusDialog subscription={initialSubscription} onClose={() => setShowStatus(false)} />}
       <div className="w-full max-w-[680px] rounded-3xl border border-[#e3e7df] bg-white p-5 shadow-sm sm:p-8">
         {isDemo && <p className="mb-5 rounded-xl bg-[#eef4e9] p-3 text-sm text-[#285d25]">Демо-режим: изменения не сохраняются на сервере.</p>}
         {!categories.length && <p role="status" className="mb-5 text-sm">В справочнике нет категорий. Сохранение недоступно, пока backend не заполнит справочник.</p>}
@@ -112,17 +117,23 @@ export default function SubscriptionForm({
             <select
               id="subscription-period"
               className={inputClass}
-              value={values.period}
-              onChange={(event) => update('period', event.target.value as FormValues['period'])}
+              value={daily ? 'daily' : values.period}
+              onChange={(event) => {
+                const isDaily = event.target.value === 'daily';
+                setDaily(isDaily);
+                update('period', isDaily ? 'custom' : event.target.value as FormValues['period']);
+                if (isDaily) update('periodDays', '1');
+              }}
               aria-invalid={Boolean(errors.period)}
               aria-describedby={errors.period ? 'period-error' : undefined}
             >
+              <option value="daily">Ежедневно</option>
               {Object.entries(periodLabels).map(([period, label]) => <option key={period} value={period}>{label}</option>)}
             </select>
             {errors.period && <p id="period-error" role="alert" className="mt-1 text-sm text-red-600">{errors.period}</p>}
           </div>
 
-          {values.period === 'custom' && <label className="block text-sm font-semibold text-[#285d25]">Количество дней
+          {values.period === 'custom' && !daily && <label className="block text-sm font-semibold text-[#285d25]">Количество дней
             <input inputMode="numeric" value={values.periodDays} onChange={(event) => update('periodDays', event.target.value)} className={inputClass} aria-invalid={Boolean(errors.periodDays)} aria-describedby={errors.periodDays ? 'days-error' : undefined} />
             {errors.periodDays && <span id="days-error" role="alert" className="mt-1 block text-sm text-red-600">{errors.periodDays}</span>}
           </label>}
@@ -165,6 +176,7 @@ export default function SubscriptionForm({
             {errors.category && <p id="category-error" role="alert" className="mt-1 text-sm text-red-600">{errors.category}</p>}
           </div>
 
+          {initialSubscription && <div><span className="block text-sm font-semibold text-[#285d25]">Статус</span><button type="button" className="inbox-read-button mt-2" onClick={() => setShowStatus(true)}>{subscriptionStatusLabels[initialSubscription.status]} · Изменить</button></div>}
           {message && (
             <p role="status" className="text-sm text-red-600">{message}</p>
           )}

@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useCallback, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createSubscriptionsApi } from '../subscriptions/api';
 import SubscriptionsTable from '../components/SubscriptionsTable';
 import Filters from '../components/Filters';
@@ -32,6 +32,9 @@ const scenarios: { value: DemoScenario; label: string }[] = [
 
 export default function SubscriptionsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const deleteId = typeof location.state?.deleteSubscriptionId === 'string' ? location.state.deleteSubscriptionId : undefined;
+  const clearDeleteRequest = useCallback(() => navigate(location.pathname, { replace: true, state: null }), [navigate, location.pathname]);
 
   const [scenario, setScenario] = useState<DemoScenario>('data');
   const [filters, setFilters] =
@@ -150,6 +153,8 @@ export default function SubscriptionsPage() {
 
           <SubscriptionsTable
             rows={rows}
+            initialDeleteId={deleteId}
+            onDeleteOpened={clearDeleteRequest}
             loading={state.kind === 'loading'}
             filtered={filtered}
             onEdit={handleEdit}

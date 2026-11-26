@@ -1,5 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
+let scrollLocks = 0;
+let savedOverflow = '';
+
 export default function DashboardModal({ titleId, onClose, children }: {
   titleId: string; onClose: () => void; children: ReactNode;
 }) {
@@ -8,13 +11,15 @@ export default function DashboardModal({ titleId, onClose, children }: {
   useEffect(() => {
     const element = dialog.current;
     const trigger = document.activeElement;
-    const previousOverflow = document.body.style.overflow;
+    if (scrollLocks === 0) savedOverflow = document.body.style.overflow;
+    scrollLocks += 1;
     element?.showModal();
     element?.querySelector<HTMLElement>('h2')?.focus();
     document.body.style.overflow = 'hidden';
     return () => {
       element?.close();
-      document.body.style.overflow = previousOverflow;
+      scrollLocks -= 1;
+      if (scrollLocks === 0) document.body.style.overflow = savedOverflow;
       if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
     };
   }, []);

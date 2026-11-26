@@ -9,6 +9,7 @@ public record NotificationResponse(
         Long subscriptionId,
         String message,
         boolean sentToTelegram,
+        boolean read,
         String status,
         OffsetDateTime createdAt,
         OffsetDateTime sentAt
@@ -19,6 +20,7 @@ public record NotificationResponse(
                 n.getSubscriptionId(),
                 n.getMessage(),
                 n.isSentToTelegram(),
+                n.isRead(),
                 n.getStatus(),
                 n.getCreatedAt(),
                 n.getSentAt()

@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.ivt.subscriptiontracker.app.notification.dto.NotificationReadResponse;
 import ru.ivt.subscriptiontracker.app.notification.dto.NotificationResponse;
 import ru.ivt.subscriptiontracker.app.notification.entity.NotificationEntity;
+import ru.ivt.subscriptiontracker.app.notification.exception.NotificationNotFoundException;
 import ru.ivt.subscriptiontracker.app.notification.repository.NotificationRepository;
 import ru.ivt.subscriptiontracker.app.security.CurrentUserService;
 import ru.ivt.subscriptiontracker.app.user.entity.User;
@@ -38,6 +40,15 @@ public class NotificationService {
                 .stream()
                 .map(NotificationResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public NotificationReadResponse updateReadStatus(Long id, boolean read) {
+        Long userId = getCurrentUser().getUserId();
+        if (notificationRepository.updateReadStatus(id, userId, read) == 0) {
+            throw new NotificationNotFoundException("Notification not found");
+        }
+        return new NotificationReadResponse(read);
     }
 
     public void sendToTelegram(String message) {

@@ -9,9 +9,16 @@ ENV VITE_VK_CLIENT_ID=$VITE_VK_CLIENT_ID
 ENV VITE_VK_REDIRECT_URI=$VITE_VK_REDIRECT_URI
 RUN npm run build
 
-FROM nginx:stable-alpine AS runtime
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
+
+ARG NGINX_CONFIG=nginx.conf
+ARG NGINX_PORT=8080
+ENV NGINX_PORT=${NGINX_PORT}
+
+COPY ${NGINX_CONFIG} /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+
+EXPOSE ${NGINX_PORT}
+
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/health || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:${NGINX_PORT}/health || exit 1

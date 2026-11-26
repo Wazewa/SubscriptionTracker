@@ -1,0 +1,52 @@
+
+name: Frontend CD
+
+on:
+  workflow_run:
+    workflows: ["Frontend CI"]
+    types: [completed]
+    branches: ["master"]
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: subscription-tracker.cr.cloud.ru
+  IMAGE_NAME: subscription-tracker-frontend
+
+jobs:
+  build-and-push:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Login to Cloud.ru Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.EVO_CR_LOGIN }}
+          password: ${{ secrets.EVO_CR_PWD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            NGINX_IMAGE=nginxinc/nginx-unprivileged:stable-alpine
+            NGINX_CONFIG=nginx.production.conf
+            NGINX_PORT=8081
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }}

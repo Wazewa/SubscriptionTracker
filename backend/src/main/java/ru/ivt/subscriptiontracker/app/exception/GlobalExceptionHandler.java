@@ -6,6 +6,7 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,6 +15,7 @@ import ru.ivt.subscriptiontracker.app.auth.exception.InvalidCredentialsException
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidPasswordChangeException;
 import ru.ivt.subscriptiontracker.app.auth.exception.InvalidRegistrationException;
 import ru.ivt.subscriptiontracker.app.dto.response.ApiError;
+import ru.ivt.subscriptiontracker.app.notification.exception.NotificationNotFoundException;
 import ru.ivt.subscriptiontracker.app.subscription.exception.SubscriptionNotFoundException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserAlreadyExistsException;
 import ru.ivt.subscriptiontracker.app.user.exception.UserNotFoundException;
@@ -39,6 +41,16 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return buildError(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException exception) {
+        return buildError(HttpStatus.BAD_REQUEST, "Invalid request body");
+    }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotificationNotFound(NotificationNotFoundException exception) {
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

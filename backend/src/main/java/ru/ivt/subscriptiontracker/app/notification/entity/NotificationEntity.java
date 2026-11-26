@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -12,6 +13,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
+@DynamicUpdate
 @Table(name = "notifications")
 public class NotificationEntity {
 
@@ -31,6 +33,9 @@ public class NotificationEntity {
 
     @Column(name = "sent_to_telegram", nullable = false)
     private boolean sentToTelegram = false;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean read;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

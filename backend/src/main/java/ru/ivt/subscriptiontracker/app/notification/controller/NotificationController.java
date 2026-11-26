@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.ivt.subscriptiontracker.app.notification.dto.NotificationReadRequest;
+import ru.ivt.subscriptiontracker.app.notification.dto.NotificationReadResponse;
 import ru.ivt.subscriptiontracker.app.notification.dto.NotificationResponse;
 import ru.ivt.subscriptiontracker.app.notification.dto.NotificationSettingsRequest;
 import ru.ivt.subscriptiontracker.app.notification.dto.TelegramSendRequest;
@@ -33,6 +35,19 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<NotificationResponse>> myNotifications() {
         return ResponseEntity.ok(notificationService.myNotifications());
+    }
+
+    @Operation(summary = "Изменить статус прочтения уведомления")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Обновлённый статус прочтения"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+            @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "404", description = "Уведомление не найдено у текущего пользователя")
+    })
+    @PatchMapping("/{id}/read")
+    public ResponseEntity<NotificationReadResponse> updateReadStatus(
+            @PathVariable Long id, @Valid @RequestBody NotificationReadRequest request) {
+        return ResponseEntity.ok(notificationService.updateReadStatus(id, request.read()));
     }
 
     @Operation(summary = "Отправить сообщение в Telegram текущего пользователя")
